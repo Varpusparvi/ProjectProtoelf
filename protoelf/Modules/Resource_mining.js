@@ -40,7 +40,7 @@ const eqCostToNextLevelMine3Res2 = (c) => {
 
 
 // Bonus is in format 20% which means 120%
-function getResourceRate(resource, level, bonus=0) {
+export function getResourceRate(resource, level, bonus=0) {
     var n = level;
     var eq;
     if(resource === 1){
@@ -56,7 +56,7 @@ function getResourceRate(resource, level, bonus=0) {
 }
 
 // To upgrade to level X
-function getCostToNextLevel(resource, level){
+export function getCostToNextLevel(resource, level){
     c = level;
     var eq1;
     var eq2;
@@ -76,13 +76,13 @@ function getCostToNextLevel(resource, level){
     return arr;
 }
 
-function getResourcesPerSecond(resource,level,bonus=0){
+export function getResourcesPerSecond(resource,level,bonus=0){
     return (getResourceRate(resource,level,bonus)/3600);
 }
 
 // Level when started
 // For one resource at the time
-function getResourcesDuringTime(resource, level, time_from, time_to, level_upgrade_array, bonus=0){
+export function getResourcesDuringTime(resource, level, time_from, time_to, level_upgrade_array, bonus=0){
 
     var total_resources=0;
     var total_arr = [];
@@ -132,4 +132,5 @@ function getResourcesDuringTime(resource, level, time_from, time_to, level_upgra
 
 }
 
-console.log(getResourcesDuringTime(1,1,1,20,[5,10,15],0));
+//export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime };
+// This is a alternative for "export" in front of each function
