@@ -1,4 +1,5 @@
-const express = require('express');
+
+import express from 'express';
 const app = express();
 const port = process.env.PORT || 8080;
 /*
@@ -6,6 +7,8 @@ const MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
 var url = "mongodb://localhost:27017/";
 */
+
+import * as ResourceMining from '../Modules/Resource_mining.js';
 
 
 /*
@@ -30,6 +33,8 @@ app.use(express.json());
 */
 app.get('/', (req, res) => {
   console.log(`${port}` + ' GET');
+  var joo = ResourceMining.getResourceRate(2,2)
+  res.send({joo});
 });
 
 
@@ -38,6 +43,7 @@ app.get('/', (req, res) => {
 */
 app.post('/', (req, res) => {
   console.log(`${port}` + ' POST');
+  console.log(ResourceMining.getResourceRate(2,2));
 });
 
 
