@@ -1,6 +1,7 @@
 * {
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 body {
@@ -17,4 +18,19 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+/*
+* Navigation / Top bar css
+*/
+.topBar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding: 15pt;
+}
+
+.starmap {
+  width: 100%;
+  max-height: auto;
 }
