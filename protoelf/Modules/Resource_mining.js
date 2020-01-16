@@ -84,39 +84,52 @@ function getResourcesPerSecond(resource,level,bonus=0){
 // For one resource at the time
 function getResourcesDuringTime(resource, level, time_from, time_to, level_upgrade_array, bonus=0){
 
-    var total_resources;
-    var total_time;
+    var total_resources=0;
     var total_arr = [];
     var unstable_level = level;
     
     if(typeof level_upgrade_array !== 'undefined' && level_upgrade_array.length > 0){
-        for(var i = 0; i<level_upgrade_array.length;i++){
-            if(i === 0){
-                var duration_from = time_from;
-                var duration_to = level_upgrade_array[i];
-            }else if(i !== 0 && i !== level_upgrade_array.length){
-                duration_from = level_upgrade_array[i-1];
-                duration_to = level_upgrade_array[i];
-            }
-            else{
-                duration_from = level_upgrade_array[i];
-                duration_to = time_to;
-            }
-            var time_difference_ms = duration_to - duration_from;
+        if(level_upgrade_array.length === 1){
+            time_difference_ms = level_upgrade_array[0] - time_from;
+            total_arr.push( getResourcesPerSecond(resource, unstable_level, bonus)/1000*time_difference_ms);
             unstable_level = unstable_level + 1;
-            total_arr.push( ((getResourcesPerSecond(resource, unstable_level, bonus))/1000)*time_difference_ms );
+            time_difference_ms = time_to - level_upgrade_array[0];
+            total_arr.push((getResourcesPerSecond(resource, unstable_level, bonus)/1000*time_difference_ms));
+            for(var i = 0; i<total_arr.length;i++){
+                total_resources = total_resources + total_arr[i];
+            }
+            return total_resources;
         }
-        for(i in total_arr){
-            total_resources = total_resources + i;
+        else{
+            time_difference_ms = level_upgrade_array[0] - time_from;
+            
+            total_arr.push( getResourcesPerSecond(resource, unstable_level, bonus)/1000*time_difference_ms);
+            unstable_level = unstable_level + 1;
+
+            for(var i = 0; i < level_upgrade_array.length-1;i++){
+                time_difference_ms = level_upgrade_array[i+1] - level_upgrade_array[i];
+                total_arr.push( getResourcesPerSecond(resource, unstable_level, bonus)/1000*time_difference_ms);
+                unstable_level = unstable_level + 1;
+                
+            }
+            
+            time_difference_ms = time_to - level_upgrade_array[level_upgrade_array.length-1];
+            total_arr.push( getResourcesPerSecond(resource, unstable_level, bonus)/1000*time_difference_ms);
+            for(var i = 0; i<total_arr.length;i++){
+                total_resources = total_resources + total_arr[i];
+            }
+            
+            return total_resources;
         }
-        return total_resources;
+            
     }
     else{
 
-        var time_difference_ms = time_from - time_to;
-        console.log(time_difference_ms)
+        var time_difference_ms = time_to - time_from;
+
         return ((getResourcesPerSecond(resource, unstable_level, bonus)/1000)*time_difference_ms);
     }
 
 }
 
+console.log(getResourcesDuringTime(1,1,1,20,[5,10,15],0));
