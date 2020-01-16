@@ -1,31 +1,32 @@
 import React from 'react';
-import starmap from './starmap.png';
+
 
 /*
-* Protoelf main screen
+* Container where context specific items are shown
 */
-const App = () =>  {
-  const res1 = useState(0);
-  const res2 = useState(0);
-  const res3 = useState(0);
+const MainContainer = ({viewMode}) =>  {
 
-  return (
-    <div className="App">
-      <div className="topBar">
-        <div>Overview</div>
-        <div>Planet</div>
-        <div>Buildings</div>
-        <div>Forces</div>
-        <div>Map</div>
-      </div>
-      <div className="starmapContainer">
-        <div>{res1}</div>
-        <div>{res2}</div>
-        <div>{res3}</div>
-        <img className="starmap" src={starmap} alt=""></img>
-      </div>
-    </div>
+  if (viewMode === 0) {
+    return (
+      <div>Overview view</div>
   );
+  } else if (viewMode === 1) {
+    return (
+        <div>Planet view</div>
+    );
+  } else if (viewMode === 2) {
+    return (
+        <div>Buildings view</div>
+    );
+  } else if (viewMode === 3) {
+    return (
+        <div>Force view</div>
+    );
+  } else {
+    return (
+        <div>Starmap view</div>
+    );
+  }
 }
 
-export default App;
+export default MainContainer;

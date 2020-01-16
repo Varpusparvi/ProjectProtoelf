@@ -1,10 +1,10 @@
 const express = require('express');
+const app = express();
+const port = process.env.PORT || 8080;
 /*
 const MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
 var url = "mongodb://localhost:27017/";
-const app = express();
-const port = process.env.PORT || 8080;
 */
 
 

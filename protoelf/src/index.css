@@ -27,7 +27,16 @@ code {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  padding: 15pt;
+  padding: 5px;
+}
+
+.button {
+  padding: 10px;
+}
+
+.button:hover {
+  background-color: rgb(87, 87, 87);
+  cursor: pointer;
 }
 
 .starmap {
