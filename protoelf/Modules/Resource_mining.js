@@ -7,6 +7,7 @@
 
 */
 
+
 var eq_rate_res1_hour = n^2;
 var eq_rate_res2_hour = 3*n;
 var eq_rate_res3_hour = 15*(1/n);
@@ -23,5 +24,7 @@ function Get_resource_rate(resource, level, bonus=0) {
     if(resource === 3){
         eq = eq_rate_res3_hour;
     }
-    return eq + eq*bonus;
+    return eq + eq*(bonus/100);
 }
+
+Get_resource_rate(1,2,130);
