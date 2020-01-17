@@ -1,24 +1,15 @@
-import * as ResourceMining from '../Modules/Resource_mining.js';
 import express from 'express';
 import MongoClient from 'mongodb';
-import ObjectId from 'mongodb';
-/*
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url);
-const { MongoClient } = require('mongodb');
-*/
 const app = express();
 const port = process.env.PORT || 8080;
 var url = "mongodb://localhost:27017/";
-/*
-const MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectId;
-*/
+
 
 /*
 * console.log that your server is up and running
 */
 app.listen(port, () => console.log(`Listening on port ${port}`));
+
 
 /*
 * Routing and headers for connections
@@ -42,7 +33,7 @@ app.get('/', (req, res) => {
 
 
 /*
-* Create a POST route to remove a recipe
+* Create a POST route to login or create user
 */
 app.post('/login', async (req, res) => {
   console.log('--------------------------------------------------------------------------------------------');
@@ -68,7 +59,6 @@ app.post('/login', async (req, res) => {
   await login(user).then((user) => {
     console.log("Send: " + user);
     res.send(JSON.stringify(user));
-    //res.send("Sended.");
   })
 });
 
@@ -103,7 +93,6 @@ const isUserInDB = (username) => new Promise((resolve, reject) => {
 * Get user from database
 */
 const getUser = (username) => new Promise((resolve, reject) => {
-  var player; 
   var query = { username: username };   // Construct a query
   
   MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
@@ -111,12 +100,12 @@ const getUser = (username) => new Promise((resolve, reject) => {
     var dbo = db.db('protoelf'); // Change
     
     // Access db and get user
-    player = await dbo.collection('player').findOne(query);
-    //player = await dbo.collection('player').find().toArray();
+    var player = await dbo.collection('player').findOne(query);
+    var colony = await dbo.collection('colony').findOne({_id: player.username});
     db.close();
     
     console.log("User: " + JSON.stringify(player) + " getUser()");
-    resolve(player);
+    resolve([player, colony]);
   })
 })
 
@@ -125,14 +114,27 @@ const getUser = (username) => new Promise((resolve, reject) => {
 * Create and return a user
 */
 const createUser = (username) => new Promise((resolve, reject) => {
-  var player; 
-  var query = { username: username }; // Construct a query for database
   // Create user to be saved
   var user = {
     username: username,
     password: "hash",
     email: "email@asd.com",
+    colonies: [username]
   }
+
+  // Create colony for the user
+  var colony = {
+    _id: username,
+    res1: 0,
+    res2: 0,
+    res3: 0,
+    res1Lvl: 1,
+    res2Lvl: 1,
+    res3Lvl: 1,
+    time: new Date().getTime
+  }
+
+  var _resolve = [undefined, colony];
 
   // Connect to database
   MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
@@ -140,25 +142,72 @@ const createUser = (username) => new Promise((resolve, reject) => {
     var dbo = db.db('protoelf'); // Change
 
     // Access db and create user
+    await dbo.collection('colony').insertOne(colony);
     await dbo.collection('player').insertOne(user);
-    player = await dbo.collection('player').findOne(query);
+    _resolve[0] = await dbo.collection('player').findOne({username: username});
+    db.close();
+  })
+
+  console.log("Created user: " + JSON.stringify(user));
+  console.log("With colony: " + JSON.stringify(colony));
+
+  // Return fulfilled promise
+  resolve(_resolve);
+})
+
+
+/*
+* Create a colony
+*/
+const createColony = (user_id) => new Promise((resolve, reject) => {
+  var playerQuery = { _id: user_id };
+  var colonyQuery = { _id: _id  }
+
+  var colony = {
+    res1: 0,
+    res2: 0,
+    res3: 0,
+    res1lvl: 1,
+    res2lvl: 1,
+    res3lvl: 1
+  }
+
+  var update = { $addToSet: {colonies: _id}};
+  var options = {returnNewDocument: true};
+
+  // Connect to database
+  MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
+    if (err) throw err;
+    var dbo = db.db('protoelf'); // Change
+
+    // Access db and create user
+    var player =  await dbo.collection('player').findOneAndUpdate(playerQuery, update, options); // Find and modify user to include new colony
+                  await dbo.collection('colony').insert(colony);
     db.close();
 
-    console.log("Created user: " + JSON.stringify(player));
-    resolve(player);
+    console.log("Created colony: " + JSON.stringify(colony));
+    resolve([player, colony]);
   })
 })
 
 
 var colonySyntax = {
-
+  _id: "id",
+  res1: "",
+  res2: "",
+  res3: "",
+  res1lvl: "",
+  res2lvl: "",
+  res3lvl: "",
 };
+
 var userSyntax = {
   _id: "id",
   username: "username",
   password: "hash",
   email: "email"
 }
+
 var planetSyntax = {
 
 }

@@ -58,7 +58,7 @@ export function getResourceRate(resource, level, bonus=0) {
 
 // To upgrade to level X
 export function getCostToNextLevel(resource, level){
-    c = level;
+    var c = level;
     var eq1;
     var eq2;
     if(resource === 1){
