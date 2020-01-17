@@ -5,6 +5,7 @@
 - getCostToNextLevel
 - getResourcesPerSecond
 - getResourcesDuringTime
+- chechCanUpgrade
 */
 
 const eqRateRes1Hour = (n) => {
@@ -132,5 +133,15 @@ export function getResourcesDuringTime(resource, level, time_from, time_to, leve
 
 }
 
-//export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime };
+function chechCanUpgrade(resource, level, r1, r2){
+    var arr = getCostToNextLevel(resource, level);
+    if(arr[0]>=r1 && arr[1]>=r2){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime, chechCanUpgrade };
 // This is a alternative for "export" in front of each function
