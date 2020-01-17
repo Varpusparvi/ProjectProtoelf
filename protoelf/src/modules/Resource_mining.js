@@ -143,5 +143,5 @@ function chechCanUpgrade(resource, level, r1, r2){
     }
 }
 
-export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime, chechCanUpgrade };
+
 // This is a alternative for "export" in front of each function
