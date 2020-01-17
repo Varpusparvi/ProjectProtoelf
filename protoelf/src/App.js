@@ -1,19 +1,32 @@
 import React from 'react';
-import {useState} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import MainContainer from './MainContainer';
+import * as ResourceMining from './modules/Resource_mining.js';
 
 var serverUrl = 'http://localhost:8080/';
+
 
 /*
 * Protoelf main screen
 */
 const App = () =>  {
+  const [viewMode, setViewMode] = useState(0);
   const [res1, setRes1] = useState(0);
   const [res2, setRes2] = useState(0);
   const [res3, setRes3] = useState(0);
-  const [viewMode, setViewMode] = useState(0);
+  const [res1Rate, setRes1Rate] = useState(1);
+  const [res2Rate, setRes2Rate] = useState(3);
+  const [res3Rate, setRes3Rate] = useState(18);
+  const [user, setUser] = useState();
 
 
+  useInterval(() => {
+    setRes1(res1 + res1Rate);
+    setRes2(res2 + res2Rate);
+    setRes3(res3 + res3Rate);
+  },1000)
+
+  
   const changeModeOverview = (e) => {
     console.log(e.target.textContent);
     setViewMode(0);
@@ -48,7 +61,6 @@ const App = () =>  {
     if (e.keyCode === 13) {
       var username = e.target.value;
       await createOrFetchPlayer(username);
-      console.log(username);
     }
   }
 
@@ -60,6 +72,8 @@ const App = () =>  {
       response.json().then((json) => {
         console.log(json);
       })
+    }).catch((e) => {
+      console.log(e);
     })
   }
 
@@ -79,9 +93,47 @@ const App = () =>  {
     })
     .then((response) => {
       response.json().then((json) => {
+        setUser(json);
+        // Tähän systeemi jolla saahaan res1,2,3 arvot asetettua
+        var _res1 = json[1].res1;
+        var _res2 = json[1].res2;
+        var _res3 = json[1].res3;
+        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1lvl);
+        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2lvl);
+        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3lvl);
+        setRes1(_res1);
+        setRes2(_res2);
+        setRes3(_res3);
+        setRes1Rate(_res1Rate);
+        setRes2Rate(_res2Rate);
+        setRes3Rate(_res3Rate);
+        setUser(json[0]);
+
         console.log(json);
       })
+    }).catch((e) => {
+      console.log(e);
     })
+  }
+
+  function useInterval(callback, delay) {
+    const savedCallback = useRef();
+  
+    // Remember the latest callback.
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+  
+    // Set up the interval.
+    useEffect(() => {
+      function tick() {
+        savedCallback.current();
+      }
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        return () => clearInterval(id);
+      }
+    }, [delay]);
   }
 
   return (
