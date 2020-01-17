@@ -133,7 +133,7 @@ export function getResourcesDuringTime(resource, level, time_from, time_to, leve
 
 }
 
-function chechCanUpgrade(resource, level, r1, r2){
+export function chechCanUpgrade(resource, level, r1, r2){
     var arr = getCostToNextLevel(resource, level);
     if(arr[0]>=r1 && arr[1]>=r2){
         return true;
@@ -143,5 +143,5 @@ function chechCanUpgrade(resource, level, r1, r2){
     }
 }
 
-export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime, chechCanUpgrade };
+//export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime, chechCanUpgrade };
 // This is a alternative for "export" in front of each function
