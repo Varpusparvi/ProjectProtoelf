@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import MainContainer from './MainContainer';
-import * as ResourceMining from './modules/Resource_mining.js';
+import * as ResourceMining from '../modules/Resource_mining.js';
 
 var serverUrl = 'http://localhost:8080/';
 
@@ -18,6 +18,7 @@ const App = () =>  {
   const [res2Rate, setRes2Rate] = useState(3);
   const [res3Rate, setRes3Rate] = useState(18);
   const [user, setUser] = useState();
+  const [currentColony, setCurrentColony] = useState();
 
 
   useInterval(() => {
@@ -26,7 +27,7 @@ const App = () =>  {
     setRes3(res3 + res3Rate);
   },1000)
 
-  
+
   const changeModeOverview = (e) => {
     console.log(e.target.textContent);
     setViewMode(0);
@@ -98,9 +99,9 @@ const App = () =>  {
         var _res1 = json[1].res1;
         var _res2 = json[1].res2;
         var _res3 = json[1].res3;
-        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1lvl);
-        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2lvl);
-        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3lvl);
+        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1Lvl);
+        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2Lvl);
+        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3Lvl);
         setRes1(_res1);
         setRes2(_res2);
         setRes3(_res3);

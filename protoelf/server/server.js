@@ -49,13 +49,14 @@ app.post('/login', async (req, res) => {
         console.log("In database: " + user);
         user = await getUser(user);
         resolve(user);
-        } else {
+      } else {
         console.log("Not in database: " + user);
         user = await createUser(user);
         resolve(user);
         }
       })
     })
+
   await login(user).then((user) => {
     console.log("Send: " + user);
     res.send(JSON.stringify(user));
@@ -67,7 +68,6 @@ app.post('/login', async (req, res) => {
 * Boolean of whether the username is in database
 */
 const isUserInDB = (username) => new Promise((resolve, reject) => {
-  var player;
   var query = { username: username }   // Construct a query
 
   // Connect to database
@@ -76,7 +76,7 @@ const isUserInDB = (username) => new Promise((resolve, reject) => {
     var dbo = db.db('protoelf'); // Change
 
     // Access db and find user
-    player = await dbo.collection('player').findOne(query);
+    var player = await dbo.collection('player').findOne(query);
     db.close();
 
     console.log("User: " + JSON.stringify(player) + " isUserInDB()");
@@ -134,25 +134,29 @@ const createUser = (username) => new Promise((resolve, reject) => {
     time: new Date().getTime
   }
 
-  var _resolve = [undefined, colony];
+  var player;
+  var colony = colony;
 
   // Connect to database
   MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
     if (err) throw err;
+
+    // Variable for the database
     var dbo = db.db('protoelf'); // Change
 
     // Access db and create user
     await dbo.collection('colony').insertOne(colony);
-    await dbo.collection('player').insertOne(user);
-    _resolve[0] = await dbo.collection('player').findOne({username: username});
+    await dbo.collection('player').insertOne(user).then( async () => {
+      player = await dbo.collection('player').findOne({username: username});
+    })
     db.close();
+
+    console.log("Created user: " + JSON.stringify(user));
+    console.log("With colony: " + JSON.stringify(colony));
+  
+    // Return fulfilled promise
+    resolve([player, colony]);
   })
-
-  console.log("Created user: " + JSON.stringify(user));
-  console.log("With colony: " + JSON.stringify(colony));
-
-  // Return fulfilled promise
-  resolve(_resolve);
 })
 
 
@@ -167,9 +171,9 @@ const createColony = (user_id) => new Promise((resolve, reject) => {
     res1: 0,
     res2: 0,
     res3: 0,
-    res1lvl: 1,
-    res2lvl: 1,
-    res3lvl: 1
+    res1Lvl: 1,
+    res2Lvl: 1,
+    res3Lvl: 1
   }
 
   var update = { $addToSet: {colonies: _id}};
@@ -196,16 +200,18 @@ var colonySyntax = {
   res1: "",
   res2: "",
   res3: "",
-  res1lvl: "",
-  res2lvl: "",
-  res3lvl: "",
+  res1Lvl: "",
+  res2Lvl: "",
+  res3Lvl: "",
+  time: "ms"
 };
 
 var userSyntax = {
   _id: "id",
   username: "username",
   password: "hash",
-  email: "email"
+  email: "email",
+  colony: ["colonyID", "colonyID"]
 }
 
 var planetSyntax = {
