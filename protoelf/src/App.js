@@ -13,24 +13,6 @@ const App = () =>  {
   const [res3, setRes3] = useState(0);
   const [viewMode, setViewMode] = useState(0);
 
-  /*
-  const fetchData = async () => {
-    await fetch(serverUrl).then((response) => {
-      response.json().then((json) => {
-        console.log(json);
-      })
-    })
-  }
-  */
-
-  const fetchData = async () => {
-    await fetch(serverUrl).then((response) => {
-      response.json().then((json) => {
-        console.log(json);
-      })
-    })
-  }
-
 
   const changeModeOverview = (e) => {
     console.log(e.target.textContent);
@@ -62,6 +44,46 @@ const App = () =>  {
     fetchData();
   }
 
+  const loginHandler = async (e) => {
+    if (e.keyCode === 13) {
+      var username = e.target.value;
+      await createOrFetchPlayer(username);
+      console.log(username);
+    }
+  }
+
+  /*
+  * Basic get without data
+  */
+  const fetchData = async () => {
+    await fetch(serverUrl).then((response) => {
+      response.json().then((json) => {
+        console.log(json);
+      })
+    })
+  }
+
+  /*
+  * Function for fetching player data from the server
+  */
+  const createOrFetchPlayer = async (username) => {
+    await fetch(serverUrl + "login", {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username
+      })
+    })
+    .then((response) => {
+      response.json().then((json) => {
+        console.log(json);
+      })
+    })
+  }
+
   return (
     <div className="App">
       <div className="topBar">
@@ -70,6 +92,7 @@ const App = () =>  {
         <div className="button" onClick={changeModeBuildings}>Buildings</div>
         <div className="button" onClick={changeModeForces}>Forces</div>
         <div className="button" onClick={changeModeStarmap}>Starmap</div>
+        <input placeholder="Enter username" onKeyUp={loginHandler}></input>
       </div>
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
