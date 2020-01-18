@@ -1,7 +1,7 @@
 * {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+
 }
 
 body {
@@ -42,4 +42,29 @@ code {
 .starmap {
   width: 100%;
   max-height: auto;
+}
+
+.buildingGrid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.building {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.building_img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.price {
+  position: absolute;
 }

@@ -10,7 +10,7 @@ var serverUrl = 'http://localhost:8080/';
 * Protoelf main screen
 */
 const App = () =>  {
-  const [viewMode, setViewMode] = useState(0);
+  const [viewMode, setViewMode] = useState(2);
   const [res1, setRes1] = useState(0);
   const [res2, setRes2] = useState(0);
   const [res3, setRes3] = useState(0);
@@ -150,7 +150,7 @@ const App = () =>  {
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
         <div>Res 3: {res3}</div>
-      <MainContainer viewMode={viewMode}></MainContainer>
+        <MainContainer viewMode={viewMode}></MainContainer>
     </div>
   );
 }

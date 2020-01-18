@@ -29,10 +29,7 @@ app.use(express.json());
 */
 app.get('/', async (req, res) => {
   console.log(`${port} ` + "Address: "+ '/' + ' GET');
-
-  var user = await ServerHelper.findSingleFromDatabase("player", {username: "Migi"})
-  user = JSON.stringify(user);
-  res.send({user});
+  res.send({});
 });
 
 

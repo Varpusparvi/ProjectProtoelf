@@ -1,4 +1,5 @@
 import React from 'react';
+import Buildings from './Buildings';
 
 
 /*
@@ -16,7 +17,10 @@ const MainContainer = ({viewMode}) =>  {
     );
   } else if (viewMode === 2) {
     return (
+      <div>
         <div>Buildings view</div>
+        <Buildings></Buildings>
+      </div>
     );
   } else if (viewMode === 3) {
     return (
