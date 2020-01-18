@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import MainContainer from './MainContainer';
-import * as ResourceMining from './modules/Resource_mining.js';
+import * as ResourceMining from '../modules/resource_mining.js';
 
 var serverUrl = 'http://localhost:8080/';
 
@@ -10,7 +10,7 @@ var serverUrl = 'http://localhost:8080/';
 * Protoelf main screen
 */
 const App = () =>  {
-  const [viewMode, setViewMode] = useState(0);
+  const [viewMode, setViewMode] = useState(2);
   const [res1, setRes1] = useState(0);
   const [res2, setRes2] = useState(0);
   const [res3, setRes3] = useState(0);
@@ -18,15 +18,16 @@ const App = () =>  {
   const [res2Rate, setRes2Rate] = useState(3);
   const [res3Rate, setRes3Rate] = useState(18);
   const [user, setUser] = useState();
+  const [currentColony, setCurrentColony] = useState();
 
-
+  // Resource meter updater
   useInterval(() => {
     setRes1(res1 + res1Rate);
     setRes2(res2 + res2Rate);
     setRes3(res3 + res3Rate);
   },1000)
 
-  
+
   const changeModeOverview = (e) => {
     console.log(e.target.textContent);
     setViewMode(0);
@@ -98,9 +99,9 @@ const App = () =>  {
         var _res1 = json[1].res1;
         var _res2 = json[1].res2;
         var _res3 = json[1].res3;
-        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1lvl);
-        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2lvl);
-        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3lvl);
+        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1Lvl);
+        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2Lvl);
+        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3Lvl);
         setRes1(_res1);
         setRes2(_res2);
         setRes3(_res3);
@@ -149,7 +150,7 @@ const App = () =>  {
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
         <div>Res 3: {res3}</div>
-      <MainContainer viewMode={viewMode}></MainContainer>
+        <MainContainer viewMode={viewMode}></MainContainer>
     </div>
   );
 }
