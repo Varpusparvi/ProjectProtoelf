@@ -1,5 +1,4 @@
 
-
 /* Module functions:
 - getResourceRate
 - getCostToNextLevel
@@ -23,14 +22,12 @@ const eqCostToNextLevelMine1Res1 = (c) => {
 const eqCostToNextLevelMine1Res2 = (c) => {
     return (10*c+(Math.pow(1.1,c)));
 }
-
 const eqCostToNextLevelMine2Res1 = (c) => {
     return (120*c+(Math.pow(1.4,c)));
 }
 const eqCostToNextLevelMine2Res2 = (c) => {
     return (50*c+(Math.pow(1.2,c)));
 }
-
 const eqCostToNextLevelMine3Res1 = (c) => {
     return (200*c+(Math.pow(1.7,c)));
 }

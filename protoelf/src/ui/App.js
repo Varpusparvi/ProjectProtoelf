@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import MainContainer from './MainContainer';
-import * as ResourceMining from '../modules/Resource_mining.js';
+import * as ResourceMining from '../modules/resource_mining.js';
 
 var serverUrl = 'http://localhost:8080/';
 
@@ -20,7 +20,7 @@ const App = () =>  {
   const [user, setUser] = useState();
   const [currentColony, setCurrentColony] = useState();
 
-
+  // Resource meter updater
   useInterval(() => {
     setRes1(res1 + res1Rate);
     setRes2(res2 + res2Rate);
