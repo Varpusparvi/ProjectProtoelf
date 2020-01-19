@@ -1,3 +1,4 @@
+import { Double } from "mongodb";
 
 /* Module functions:
 - getResourceRate
@@ -6,6 +7,7 @@
 - getResourcesDuringTime
 - chechCanUpgrade
 */
+var dbo = db.db('protoelf'); // Change
 
 const eqRateRes1Hour = (n) => {
     return (Math.pow(n,2));
@@ -38,6 +40,9 @@ const eqCostToNextLevelMine3Res2 = (c) => {
 
 
 // Bonus is in format 20% which means 120%
+// Need resource, colony_id
+// await dbo.collection('colony').findOne(playerQuery)
+
 export function getResourceRate(resource, level, bonus=0) {
     var n = level;
     var eq;
