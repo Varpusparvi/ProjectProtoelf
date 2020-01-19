@@ -4,7 +4,7 @@ import image from './building_placeholder.png'
 /*
 * Container where context specific items are shown
 */
-const Buildings = () =>  {
+const Buildings = ({upgrade}) =>  {
 
   var resGen1 = {
     id: 1,
@@ -69,8 +69,9 @@ const Buildings = () =>  {
     tradingPost
   ]
 
-  const handleClick = (id) => {
-    console.log(id);
+  const handleClick = (buildingId) => {
+    console.log(buildingId);
+    upgrade(buildingId);
   }
 
   return (

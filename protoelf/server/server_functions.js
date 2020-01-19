@@ -1,99 +1,37 @@
 "use strict";
-import MongoClient from 'mongodb';
-var url = "mongodb://localhost:27017/";
-
-
-/**
- * Checks if given username is already in database
- * @param {*} username "username" which to use to check the database for matches
- * @returns boolean whether or not user is in database
- */
-export const isUserInDB = (username) => new Promise((resolve, reject) => {
-  var query = { username: username }   // Construct a query
-
-  // Connect to database
-  MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
-    if (err) throw err;
-    var dbo = db.db('protoelf'); // Change
-
-    // Access db and find user
-    var player = await dbo.collection('player').findOne(query);
-    db.close();
-
-    console.log("User: " + JSON.stringify(player) + " isUserInDB()");
-    if (player === null) {
-      resolve(false);
-    } else {
-      resolve(true);
-    }
-  })
-})
-
+const DB = require('./db.js');
+var ObjectId = require('mongodb').ObjectID
+//var ResourceMining = require('../src/modules/resource_mining.js');
 
 
 /**
  * Check if the user is in database.
  * If user is not, create user.
  * Otherwise get user.
- * @param {*} user 
+ * @param {*} username username
  * @returns user
  */
-export const login = (username) => new Promise(async (resolve, reject) => {
-  await isUserInDB(username).then(async (bool) => {
-    if (bool) {
-      console.log("In database: " + username);
-      var user = await getUser(username);
-      resolve(user);
-    } else {
-      console.log("Not in database: " + username);
-      var user = await createUser(username);
-      resolve(user);
-    }
-  })
-})
-
-
-/**
- * Searches for a single document in the database
- * @param {*} collection Name of the collection in database
- * @param {*} query Query which to use. {username: "username"}
- * @returns Matching document
- */
-export const findSingleFromDatabase = (collection, query) => new Promise((resolve, reject) => {
-  MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
-    if (err) throw err;
-    var database = db.db("protoelf");
-
-    // Database query
-    var result = await database.collection(collection).findOne(query);
-    console.log("findSingleFromDatabase() called.");
-    db.close();
-    resolve(result);
-  })
-})
-
-
-
-/**
- * Searches for user by its "username" in database
- * @param {*} username "username" of the user
- * @returns array with [user, colony]
- */
-export const getUser = (username) => new Promise((resolve, reject) => {
-  var query = { username: username };   // Construct a query
-  
-  MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
-    if (err) throw err;
-    var dbo = db.db('protoelf'); // Change
-    
-    // Access db and get user
-    var player = await dbo.collection('player').findOne(query);
-    var colony = await dbo.collection('colony').findOne({_id: player.username});
-    db.close();
-    
-    console.log("User: " + JSON.stringify(player) + " getUser()");
-    resolve([player, colony]);
-  })
+const login = (username) => new Promise((resolve, reject) => {
+  // Try to find user from database
+  var userQuery = { username: username };
+  try {
+    findDocumentFromDatabase("player", userQuery).then( async (user) => {
+      if (user !== undefined && user !== null) {  // continue if user is found
+        // try to find colony from database
+        var colonyId = user.colonies[0];
+        var colonyQuery = { _id: new ObjectId(colonyId) };
+        findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
+          resolve([user, colony]); // Returns user and colony
+        })
+      } else {
+        // Create new user if not found in database
+        user = await createUser(username);
+        resolve(user);
+      }
+    })
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 
@@ -103,48 +41,238 @@ export const getUser = (username) => new Promise((resolve, reject) => {
  * @param {*} username username to create account with
  * @returns array [user, colony]
  */
-export const createUser = (username) => new Promise((resolve, reject) => {
+const createUser = (username) => new Promise((resolve, reject) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+  // Create colony for the user
+  var colony = {
+    resource1: 0,
+    resource2: 0,
+    resource3: 0,
+    resource1Level: 1,
+    resource2Level: 1,
+    resource3Level: 1,
+    time: new Date().getTime()
+  }
+
   // Create user to be saved
   var user = {
     username: username,
     password: "hash",
     email: "email@asd.com",
-    colonies: [username]
+    colonies: []
   }
 
-  // Create colony for the user
-  var colony = {
-    _id: username,
-    res1: 0,
-    res2: 0,
-    res3: 0,
-    res1Lvl: 1,
-    res2Lvl: 1,
-    res3Lvl: 1,
-    time: new Date().getTime
-  }
+  // Insert colony into db
+  db.collection("colony").insertOne(colony, (err) => {
+    if (err) return;
+    console.log(colony);
+    user.colonies.push(colony._id);
 
-  var player;
-  var colony = colony;
-
-  // Connect to database
-  MongoClient.connect(url, {useUnifiedTopology: true}, async (err, db) => {
-    if (err) throw err;
-
-    // Variable for the database
-    var dbo = db.db('protoelf'); // Change
-
-    // Access db and create user
-    await dbo.collection('colony').insertOne(colony);
-    await dbo.collection('player').insertOne(user).then( async () => {
-      player = await dbo.collection('player').findOne({username: username});
+    // Insert user into db
+    db.collection("player").insertOne(user, (err) => {
+      if (err) return;
+      console.log(user);
+      resolve([user, colony]);
     })
-    db.close();
-
-    console.log("Created user: " + JSON.stringify(user));
-    console.log("With colony: " + JSON.stringify(colony));
-  
-    // Return fulfilled promise
-    resolve([player, colony]);
   })
 })
+
+
+
+/**
+ * Searches for a single document in the database
+ * @param {*} collection Name of the collection in database
+ * @param {*} query Query which to use. {username: "username"}
+ * @returns Single matching document
+ */
+const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+
+  // Database query
+  try {
+    var result = await db.collection(collection).findOne(query);
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("findDocumentFromDatabase() called.");
+  resolve(result);
+})
+
+
+
+/**
+ * Inserts a single document into the database
+ * @param {*} collection Name of the collection in database
+ * @param {*} document Document which to insert. JSON.
+ * @returns Generated _id of the document
+ */
+const insertDocumentIntoDatabase = (collection, document) => new Promise( async (resolve, reject) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+
+  // Database query
+  try {
+    var _id = await db.collection(collection).insertOne(document).insertedId;
+    console.log(_id);
+  } catch (error) {
+    console.log(error);
+  }
+  
+  console.log("insertDocumentIntoDatabase() called.");
+  resolve(_id);
+})
+
+
+/**
+ * Gets the document with given username
+ * @param {*} username 
+ * @returns found file and boolean [object, true]. If didn't find file return [null, false]
+ */
+const isUserInDb = (username) => new Promise( async (resolve, reject) => {
+  var query = {username: username};
+  var collection = "player";
+  findDocumentFromDatabase(collection,query).then((user) => {
+    if (user !== null) {
+      resolve(user, true);
+    } else {
+      resolve(null, false);
+    }
+  }).catch((err) => {
+    console.log(err);
+  })
+})
+
+
+/**
+ * Gets the document with given colonyId
+ * @param {*} colonyId 
+ * @returns found file and boolean [object, true]. If didn't find file return [null, false]
+ */
+const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
+  var query = { _id: new ObjectId(colonyId) };
+  var collection = "colony";
+  findDocumentFromDatabase(collection,query).then((colony) => {
+    if (colony !== null) {
+      resolve(colony, true);
+    } else {
+      resolve(null, false);
+    }
+  }).catch((err) => {
+    console.log(err);
+  })
+})
+
+
+/**
+ * Gets the document with given upgradeId
+ * @param {*} upgradeId 
+ * @returns found file and boolean [object, true]. If didn't find file return [null, false]
+ */
+const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
+  var query = { _id: new ObjectId(upgradeId) };
+  var collection = "upgrade";
+  findDocumentFromDatabase(collection,query).then((upgrade) => {
+    if (upgrade !== null) {
+      resolve(upgrade, true);
+    } else {
+      resolve(null, false);
+    }
+  }).catch((err) => {
+    console.log(err);
+  })
+})
+
+
+/**
+ * Gets the document with given upgradeId
+ * @param {*} upgradeId 
+ * @returns found file and boolean [object, true]. If didn't find file return [null, false]
+ */
+const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
+  /*
+  var upgradeQuery = { _id: new ObjectId(upgradeId) };
+  var colonyQuery = { _id: new ObjectId(colonyId) };
+  var upgradeCollection = "upgrade";
+  var colonyCollection = "colony";
+  */
+
+  resolve(true);
+})
+
+
+
+/**
+ * Upgrades selected entity in selected colony for user
+ * @param {*} upgradeId 
+ * @param {*} upgradeLevel 
+ * @param {*} colonyId 
+ * @param {*} username 
+ * @returns upgraded or unupgraded colony
+ */
+const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
+  var userExists = await isUserInDb(username);
+  var colonyExists = await isColonyInDb(colonyId);
+  var upgradeExists = await isUpgradeInDb(upgradeId);
+  var resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+
+  var collection = "colony";
+  var query = { _id: new ObjectId(colonyId) };
+
+  // TODO check for if the player owns the colony
+  // TODO check for if the upgrade is possible
+
+  // Check request for problems
+  if (userExists[1]) {
+    console.log("User exists");
+    if (colonyExists[1]) {
+      console.log("Colony exists");
+      if (upgradeExists[1]) {
+        console.log("Upgrade exists");
+        if (resourceExists[1]) {
+          console.log("Resources exist");
+          // Päivitä DB
+          // Palauta päivitetty colony
+          var colony = await findDocumentFromDatabase("colony", { _id: colonyId});
+          console.log("Päivitettyd!")
+          resolve(colony);
+        }
+      }
+    }
+  }
+})
+
+
+module.exports = {
+  login,
+  upgrade,
+}
+
+
+var colonySyntax = {
+  _id: "id",
+  resource1: 0,
+  resource2: 0,
+  resource3: 0,
+  resource1Level: 1,
+  resource2Level: 1,
+  resource3Level: 1,
+  time: "ms"
+};
+
+var userSyntax = {
+  _id: "id",
+  username: "username",
+  password: "hash",
+  email: "email",
+  colonies: ["colonyID", "colonyID"]
+}
+
+var planetSyntax = {
+  _id: "id",
+  username: "username",
+  password: "hash",
+  email: "email",
+  colony: ["colonyID", "colonyID"]
+}
