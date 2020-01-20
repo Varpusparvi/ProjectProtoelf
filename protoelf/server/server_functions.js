@@ -35,6 +35,59 @@ const login = (username) => new Promise((resolve, reject) => {
 })
 
 
+/**
+ * Upgrades selected entity in selected colony for user
+ * @param {*} upgradeId 
+ * @param {*} upgradeLevel 
+ * @param {*} colonyId 
+ * @param {*} username 
+ * @returns upgraded or unupgraded colony
+ */
+const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
+  var userExists = await isUserInDb(username);
+  var colonyExists = await isColonyInDb(colonyId);
+  var upgradeExists = await isUpgradeInDb(upgradeId);
+  var resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+  resolve(colonyExists[0]);
+
+  var collection = "colony";
+  var query = { _id: new ObjectId(colonyId) };
+  // TODO Correct the fields
+  var upgrade = 
+  {
+    $set: {
+      upgradeId: upgradeLevel
+    },
+    $currentDate: {
+      time: { 
+        $type: "timestamp" 
+      }
+    }
+  }
+  console.log(upgrade);
+  // TODO check for if the player owns the colony
+  // TODO check for if the upgrade is possible
+  // Check request for problems
+  //console.log(userExists);
+  if (userExists[1]) {
+    console.log("User exists");
+    if (colonyExists[1]) {
+      console.log("Colony exists");
+      if (upgradeExists[1]) {
+        console.log("Upgrade exists");
+        if (resourceExists[1]) {
+          console.log("Resources exist");
+          // Päivitä DB
+          // Palauta päivitetty colony
+          var colony = await findAndUpdateFromDatabase(collection, query, upgrade);
+          console.log(colony);
+          resolve(colony);
+        }
+      }
+    }
+  }
+})
+
 
 /**
  * Creates user with given username and gives user a colony
@@ -79,11 +132,10 @@ const createUser = (username) => new Promise((resolve, reject) => {
 })
 
 
-
 /**
  * Searches for a single document in the database
  * @param {*} collection Name of the collection in database
- * @param {*} query Query which to use. {username: "username"}
+ * @param {*} query Query used to find target document
  * @returns Single matching document
  */
 const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
@@ -100,6 +152,28 @@ const findDocumentFromDatabase = (collection, query) => new Promise( async (reso
   resolve(result);
 })
 
+
+/**
+ * Updates a single document in the database
+ * @param {*} collection Name of the collection in database
+ * @param {*} query Query used to find target document
+ * @param {*} updatedDocument modification or updated document {<operator1>: { <field1>: <value1>, ... },}
+ * @returns Updated document
+ * https://docs.mongodb.com/manual/reference/operator/update/#id1
+ */
+const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Promise( async (resolve, reject) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+
+  // Database query
+  try {
+    var result = await db.collection(collection).findOneAndUpdate(query, updatedDocument, {returnNewDocument: true});
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("findDocumentFromDatabase() called.");
+  resolve(result);
+})
 
 
 /**
@@ -126,6 +200,26 @@ const insertDocumentIntoDatabase = (collection, document) => new Promise( async 
 
 
 /**
+ * Deletes a single document from the database
+ * @param {*} collection Name of the collection in database
+ * @param {*} query Query used to find target document
+ * @returns ????
+ */
+const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+
+  try {
+    var deleted = await db.collection(collection).removeOne(query);
+    console.log(deleted)
+  } catch (error) {
+    console.log(error);
+  }
+  resolve(deleted);
+})
+
+
+/**
  * Gets the document with given username
  * @param {*} username 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
@@ -135,9 +229,9 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
   var collection = "player";
   findDocumentFromDatabase(collection,query).then((user) => {
     if (user !== null) {
-      resolve(user, true);
+      resolve([user, true]);
     } else {
-      resolve(null, false);
+      resolve([null, false]);
     }
   }).catch((err) => {
     console.log(err);
@@ -155,9 +249,9 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
   var collection = "colony";
   findDocumentFromDatabase(collection,query).then((colony) => {
     if (colony !== null) {
-      resolve(colony, true);
+      resolve([colony, true]);
     } else {
-      resolve(null, false);
+      resolve([null, false]);
     }
   }).catch((err) => {
     console.log(err);
@@ -175,9 +269,9 @@ const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
   var collection = "upgrade";
   findDocumentFromDatabase(collection,query).then((upgrade) => {
     if (upgrade !== null) {
-      resolve(upgrade, true);
+      resolve([upgrade, true]);
     } else {
-      resolve(null, false);
+      resolve([null, false]);
     }
   }).catch((err) => {
     console.log(err);
@@ -203,50 +297,17 @@ const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( as
 
 
 
-/**
- * Upgrades selected entity in selected colony for user
- * @param {*} upgradeId 
- * @param {*} upgradeLevel 
- * @param {*} colonyId 
- * @param {*} username 
- * @returns upgraded or unupgraded colony
- */
-const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
-  var userExists = await isUserInDb(username);
-  var colonyExists = await isColonyInDb(colonyId);
-  var upgradeExists = await isUpgradeInDb(upgradeId);
-  var resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
-
-  var collection = "colony";
-  var query = { _id: new ObjectId(colonyId) };
-
-  // TODO check for if the player owns the colony
-  // TODO check for if the upgrade is possible
-
-  // Check request for problems
-  if (userExists[1]) {
-    console.log("User exists");
-    if (colonyExists[1]) {
-      console.log("Colony exists");
-      if (upgradeExists[1]) {
-        console.log("Upgrade exists");
-        if (resourceExists[1]) {
-          console.log("Resources exist");
-          // Päivitä DB
-          // Palauta päivitetty colony
-          var colony = await findDocumentFromDatabase("colony", { _id: colonyId});
-          console.log("Päivitettyd!")
-          resolve(colony);
-        }
-      }
-    }
-  }
-})
-
-
 module.exports = {
   login,
   upgrade,
+  findDocumentFromDatabase,
+  findAndUpdateFromDatabase,
+  insertDocumentIntoDatabase,
+  removeDocumentFromDatabase,
+  isUserInDb,
+  isColonyInDb,
+  isUpgradeInDb,
+  isEnoughResources,
 }
 
 

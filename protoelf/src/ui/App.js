@@ -123,7 +123,7 @@ const App = () =>  {
   }
 
 
-    /**
+  /**
    * Upgrades a building or tech with given id
    * @param {*} id id of an object to be upgraded
    */

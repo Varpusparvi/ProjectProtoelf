@@ -7,7 +7,18 @@ import { Double } from "mongodb";
 - getResourcesDuringTime
 - chechCanUpgrade
 */
-var dbo = db.db('protoelf'); // Change
+
+// Käytä valmiita funktioita databasen työstämiseen esim.
+/*
+import * as ServerHelper from '../../server/server_functions.js'
+ServerHelper.insertDocumentIntoDatabase('player', {username : "Kuski"});
+ServerHelper.findDocumentFromDatabase("player", {username: "Kuski"});
+ServerHelper.removeDocumentFromDatabase("player", {username: "Kuski"});
+*/
+// Laitat tuon "ServerHelper" + . niin näkyy mitä sieltä exportataan mitä voi käyttää
+// Niissä funktioissa lukee mitä ne palauttaa ja mitä ne tarvii kun hiirellä hoveraa
+//var dbo = db.db('protoelf'); // Change
+
 
 const eqRateRes1Hour = (n) => {
     return (Math.pow(n,2));
