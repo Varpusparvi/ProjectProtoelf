@@ -4,81 +4,23 @@ import image from './building_placeholder.png'
 /*
 * Container where context specific items are shown
 */
-const Buildings = ({upgrade}) =>  {
-
-  var resGen1 = {
-    id: 1,
-    name: "Resource 1 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var resGen2 = {
-    id: 2,
-    name: "Resource 2 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var resGen3 = {
-    id: 3,
-    name: "Resource 3 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var starport = {
-    id: 4,
-    name: "Starport",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var barracks = {
-    id: 5,
-    name: "Barracks",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var tradingPost = {
-    id: 6,
-    name: "Trading post",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  const BUILDINGS = [
-    resGen1,
-    resGen2,
-    resGen3,
-    starport,
-    barracks,
-    tradingPost
-  ]
+const Buildings = ({upgrade, buildings}) =>  {
 
   const handleClick = (buildingId) => {
     console.log(buildingId);
     upgrade(buildingId);
   }
 
+  if (buildings === undefined) {
+    return (
+      <div>No buildings found. This is probably caused by no access to the server</div>
+    )
+  }
   return (
     <div className="buildingGrid">
-      {BUILDINGS.map((building) => {
+      {buildings.map((building) => {
         return (
-          <div key={building.id} value={building.id} className="building" onClick={() => handleClick(building.id)}>
+          <div key={building._id} value={building._id} className="building" onClick={() => handleClick(building._id)}>
             <div className="building_img">
               <img src={image} alt=""></img>
               <div className="price">
@@ -88,6 +30,7 @@ const Buildings = ({upgrade}) =>  {
               </div>
             </div>
             <div>{building.name}</div>
+            <div>Level: </div>
           </div>
         )
       })}

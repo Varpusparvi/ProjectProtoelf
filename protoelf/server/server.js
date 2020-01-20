@@ -1,9 +1,31 @@
 "use strict";
-const db = require('./db.js');
+const DB = require('./db.js');
 const ServerHelper = require('./server_functions.js');
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 8080;
+
+var buildings = [];
+var tech = [];
+
+
+
+
+/*
+* Starts connection to db and listens to port
+*/
+DB.initDb( async () => {
+  let buildingIds = await ServerHelper.addBuildingsToDb();
+
+  buildings = await Promise.all(buildingIds.map(( async (buildingId) => {
+    let b = await ServerHelper.isUpgradeInDb(buildingId);
+    return b[0];
+  })))
+  console.log(buildings);
+  console.log("Loaded buildings into memory!");
+
+  app.listen(port, () => console.log(`Listening on port ${port}`));
+})
 
 
 
@@ -18,15 +40,6 @@ app.use(function (req, res, next) {
 
 app.use(express.urlencoded());
 app.use(express.json());
-
-
-/*
-* Starts connection to db and listens to port
-*/
-db.initDb(() => {
-  db.getDb();
-  app.listen(port, () => console.log(`Listening on port ${port}`));
-})
 
 
 /*
@@ -45,7 +58,7 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.log(error);
   }
-  console.log("Send: " + JSON.stringify(user));
+  user.push(buildings);
   res.send(JSON.stringify(user));
 })
 
@@ -53,14 +66,14 @@ app.post('/login', async (req, res) => {
 /*
 * POST Upgrade
 */
-app.post('/upgrade', async (req, res) => {
+app.post('/building', async (req, res) => {
   var username = req.body.username;
   var upgradeId = req.body.upgradeId;
   var upgradeLevel = req.body.upgradeLevel
   var colonyId = req.body.colonyId;
-
+  
   console.log('--------------------------------------------------------------------------------------------');
-  console.log(`${port} ` + "Address: "+ '/upgrade' + ' POST');
+  console.log(`${port} ` + "Address: "+ '/building' + ' POST');
   console.log(req.body);
   
   try {

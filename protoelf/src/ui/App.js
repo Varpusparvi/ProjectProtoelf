@@ -10,13 +10,6 @@ var serverUrl = 'http://localhost:8080/';
 * Protoelf main screen
 */
 const App = () =>  {
-  const [viewMode, setViewMode] = useState(2);
-  const [res1, setRes1] = useState(0);
-  const [res2, setRes2] = useState(0);
-  const [res3, setRes3] = useState(0);
-  const [res1Rate, setRes1Rate] = useState(1);
-  const [res2Rate, setRes2Rate] = useState(3);
-  const [res3Rate, setRes3Rate] = useState(18);
   const [user, setUser] = useState({
     _id : undefined,
     username: "",
@@ -30,6 +23,14 @@ const App = () =>  {
     resource2Level: 0,
     resource3Level: 0,
   });
+  const [viewMode, setViewMode] = useState(2);
+  const [buildings, setBuildings] = useState();
+  const [res1, setRes1] = useState(0);
+  const [res2, setRes2] = useState(0);
+  const [res3, setRes3] = useState(0);
+  const [res1Rate, setRes1Rate] = useState(1);
+  const [res2Rate, setRes2Rate] = useState(3);
+  const [res3Rate, setRes3Rate] = useState(18);
 
   // Resource meter updater
   useInterval(() => {
@@ -65,14 +66,45 @@ const App = () =>  {
   }
 
 
+  const setResources = (json) => {
+    let _res1Rate = ResourceMining.getResourceRate(1,json.resource1Level);
+    let _res2Rate = ResourceMining.getResourceRate(2,json.resource2Level);
+    let _res3Rate = ResourceMining.getResourceRate(3,json.resource3Level);
+    setRes1(json.resource1);
+    setRes2(json.resource2);
+    setRes3(json.resource3);
+    console.log(_res1Rate);
+    console.log(_res2Rate);
+    console.log(_res3Rate);
+    setRes1Rate(_res1Rate);
+    setRes2Rate(_res2Rate);
+    setRes3Rate(_res3Rate);
+  }
+
+
   /**
    * Handles login and registering
    * @param {*} e value of input field
    */
-  const loginHandler = (e) => {
+  const loginHandler = async (e) => {
     if (e.keyCode === 13) {
       var username = e.target.value;
-      createOrFetchPlayer(username);
+
+      let json = await createOrFetchPlayer(username);
+      console.log(json);
+      if (json === null || json === undefined) {
+        return;
+      }
+
+      // init app
+      setUser(json[0]);
+      setCurrentColony(json[1]);
+      setResources(json[1]);
+      setBuildings(json[2]);
+
+      var _res1Rate = ResourceMining.getResourceRate(1,json[1].resource1Level);
+      var _res2Rate = ResourceMining.getResourceRate(2,json[1].resource2Level);
+      var _res3Rate = ResourceMining.getResourceRate(3,json[1].resource3Level);
     }
   }
 
@@ -80,8 +112,8 @@ const App = () =>  {
   /*
   * Function for fetching player data from the server
   */
-  const createOrFetchPlayer = async (username) => {
-    await fetch(serverUrl + "login", {
+  const createOrFetchPlayer = (username) => new Promise((resolve, reject) => {
+    fetch(serverUrl + "login", {
       method: "POST",
       headers: {
         'Accept': 'application/json',
@@ -93,34 +125,15 @@ const App = () =>  {
     })
     .then((response) => {
       response.json().then((json) => {
-        if (json === null) {
-          return;
-        }
-        console.log(json);
-        setUser(json[0]);
-        // Tähän systeemi jolla saahaan res1,2,3 arvot asetettua
-        var _res1 = json[1].resource1;
-        var _res2 = json[1].resource2;
-        var _res3 = json[1].resource3;
-        var _res1Rate = ResourceMining.getResourceRate(1,json[1].resource1Level);
-        var _res2Rate = ResourceMining.getResourceRate(2,json[1].resource2Level);
-        var _res3Rate = ResourceMining.getResourceRate(3,json[1].resource3Level);
-        setRes1(_res1);
-        setRes2(_res2);
-        setRes3(_res3);
-        setRes1Rate(_res1Rate);
-        setRes2Rate(_res2Rate);
-        setRes3Rate(_res3Rate);
-        
-        setUser(json[0]);
-        setCurrentColony(json[1]);
+        resolve(json);
+        return json;
       }).catch((error) => {
         console.log(error);
       })
     }).catch((error) => {
       console.log(error);
     })
-  }
+  })
 
 
   /**
@@ -128,7 +141,7 @@ const App = () =>  {
    * @param {*} id id of an object to be upgraded
    */
   const upgrade = async (id) => {
-    await fetch(serverUrl + "upgrade", {
+    await fetch(serverUrl + "building", {
       method: "POST",
       headers: {
         'Accept' : 'application/json',
@@ -206,7 +219,7 @@ const App = () =>  {
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
         <div>Res 3: {res3}</div>
-        <MainContainer viewMode={viewMode} upgrade={upgrade}></MainContainer>
+        <MainContainer viewMode={viewMode} upgrade={upgrade} buildings={buildings}></MainContainer>
     </div>
   );
 }

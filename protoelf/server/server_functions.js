@@ -22,11 +22,13 @@ const login = (username) => new Promise((resolve, reject) => {
         var colonyQuery = { _id: new ObjectId(colonyId) };
         findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
           resolve([user, colony]); // Returns user and colony
+          return;
         })
       } else {
         // Create new user if not found in database
         user = await createUser(username);
         resolve(user);
+        return;
       }
     })
   } catch (error) {
@@ -48,7 +50,6 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
   var colonyExists = await isColonyInDb(colonyId);
   var upgradeExists = await isUpgradeInDb(upgradeId);
   var resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
-  resolve(colonyExists[0]);
 
   var collection = "colony";
   var query = { _id: new ObjectId(colonyId) };
@@ -56,7 +57,7 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
   var upgrade = 
   {
     $set: {
-      upgradeId: upgradeLevel
+      $upgradeId: upgradeLevel
     },
     $currentDate: {
       time: { 
@@ -82,6 +83,7 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
           var colony = await findAndUpdateFromDatabase(collection, query, upgrade);
           console.log(colony);
           resolve(colony);
+          return;
         }
       }
     }
@@ -127,6 +129,7 @@ const createUser = (username) => new Promise((resolve, reject) => {
       if (err) return;
       console.log(user);
       resolve([user, colony]);
+      return;
     })
   })
 })
@@ -150,6 +153,7 @@ const findDocumentFromDatabase = (collection, query) => new Promise( async (reso
   }
   console.log("findDocumentFromDatabase() called.");
   resolve(result);
+  return;
 })
 
 
@@ -173,6 +177,7 @@ const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Pr
   }
   console.log("findDocumentFromDatabase() called.");
   resolve(result);
+  return;
 })
 
 
@@ -196,6 +201,7 @@ const insertDocumentIntoDatabase = (collection, document) => new Promise( async 
   
   console.log("insertDocumentIntoDatabase() called.");
   resolve(_id);
+  return;
 })
 
 
@@ -216,6 +222,43 @@ const removeDocumentFromDatabase = (collection, query) => new Promise( async () 
     console.log(error);
   }
   resolve(deleted);
+  return;
+})
+
+
+/**
+ * Adds buildings to database
+ * buildings are defined in server_functions.js
+ * @returns array of ids of buildings
+ */
+const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+  const collection = "buildings";
+
+  var array = await db.collection(collection).find().toArray()
+
+  if ( array.length === 0) { // if buildings are not in database
+    try {
+      var buildingIds = await db.collection(collection).insertMany(BUILDINGS);
+      buildingIds = buildingIds.insertedIds;
+      array = Object.values(buildingIds).map(building => {
+        return building;
+      })
+    } catch (error) {
+      console.log(error);
+    }
+  } else {    // if buildings are in database
+    try {
+      array = array.map(building => {
+        return building._id;
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  resolve(array);
+  return;
 })
 
 
@@ -230,8 +273,10 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
   findDocumentFromDatabase(collection,query).then((user) => {
     if (user !== null) {
       resolve([user, true]);
+      return;
     } else {
       resolve([null, false]);
+      return;
     }
   }).catch((err) => {
     console.log(err);
@@ -250,8 +295,10 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
   findDocumentFromDatabase(collection,query).then((colony) => {
     if (colony !== null) {
       resolve([colony, true]);
+      return;
     } else {
       resolve([null, false]);
+      return;
     }
   }).catch((err) => {
     console.log(err);
@@ -266,16 +313,29 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
  */
 const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
   var query = { _id: new ObjectId(upgradeId) };
-  var collection = "upgrade";
-  findDocumentFromDatabase(collection,query).then((upgrade) => {
-    if (upgrade !== null) {
-      resolve([upgrade, true]);
+  var collection1 = "buildings";
+  var collection2 = "tech";
+
+  try {
+    var document = await findDocumentFromDatabase(collection1, query); // is in building db?
+    if (document === null) {
+      document = await findDocumentFromDatabase(collection2, query);  // is in tech db?
+      if (document === null) {
+        resolve([null, false]);
+        return;
+      } else {
+        resolve([document, true]);
+        return;
+      }
     } else {
-      resolve([null, false]);
+      resolve([document, true]);
+      return;
     }
-  }).catch((err) => {
-    console.log(err);
-  })
+  } catch (error) {
+    console.log(error);
+    reject();
+    return;
+  }
 })
 
 
@@ -293,6 +353,7 @@ const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( as
   */
 
   resolve(true);
+  return;
 })
 
 
@@ -304,6 +365,7 @@ module.exports = {
   findAndUpdateFromDatabase,
   insertDocumentIntoDatabase,
   removeDocumentFromDatabase,
+  addBuildingsToDb,
   isUserInDb,
   isColonyInDb,
   isUpgradeInDb,
@@ -337,3 +399,64 @@ var planetSyntax = {
   email: "email",
   colony: ["colonyID", "colonyID"]
 }
+
+
+
+var buildingIds = [];
+
+var resGen1 = {
+  name: "Resource 1 generator",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+var resGen2 = {
+  name: "Resource 2 generator",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+var resGen3 = {
+  name: "Resource 3 generator",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+var starport = {
+  name: "Starport",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+var barracks = {
+  name: "Barracks",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+var tradingPost = {
+  name: "Trading post",
+  level: 1,
+  priceResource1: 1,
+  priceResource2: 3,
+  priceResource3: 18
+}
+
+const BUILDINGS = [
+  resGen1,
+  resGen2,
+  resGen3,
+  starport,
+  barracks,
+  tradingPost
+]

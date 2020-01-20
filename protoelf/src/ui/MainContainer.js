@@ -5,7 +5,7 @@ import Buildings from './Buildings';
 /*
 * Container where context specific items are shown
 */
-const MainContainer = ({viewMode, upgrade}) =>  {
+const MainContainer = ({viewMode, upgrade, buildings}) =>  {
 
   if (viewMode === 0) {
     return (
@@ -19,7 +19,7 @@ const MainContainer = ({viewMode, upgrade}) =>  {
     return (
       <div>
         <div>Buildings view</div>
-        <Buildings upgrade={upgrade}></Buildings>
+        <Buildings upgrade={upgrade} buildings={buildings}></Buildings>
       </div>
     );
   } else if (viewMode === 3) {
