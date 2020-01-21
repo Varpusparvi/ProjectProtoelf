@@ -1,7 +1,7 @@
 "use strict";
 const DB = require('./db.js');
-var ObjectId = require('mongodb').ObjectID
-//var ResourceMining = require('../src/modules/resource_mining.js');
+let ObjectId = require('mongodb').ObjectID
+//let ResourceMining = require('../src/modules/resource_mining.js');
 
 
 /**
@@ -13,13 +13,13 @@ var ObjectId = require('mongodb').ObjectID
  */
 const login = (username) => new Promise((resolve, reject) => {
   // Try to find user from database
-  var userQuery = { username: username };
+  let userQuery = { username: username };
   try {
     findDocumentFromDatabase("player", userQuery).then( async (user) => {
       if (user !== undefined && user !== null) {  // continue if user is found
         // try to find colony from database
-        var colonyId = user.colonies[0];
-        var colonyQuery = { _id: new ObjectId(colonyId) };
+        let colonyId = user.colonies[0];
+        let colonyQuery = { _id: new ObjectId(colonyId) };
         findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
           resolve([user, colony]); // Returns user and colony
           return;
@@ -46,48 +46,68 @@ const login = (username) => new Promise((resolve, reject) => {
  * @returns upgraded or unupgraded colony
  */
 const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
-  var userExists = await isUserInDb(username);
-  var colonyExists = await isColonyInDb(colonyId);
-  var upgradeExists = await isUpgradeInDb(upgradeId);
-  var resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+  let userExists;
+  let colonyExists;
+  let upgradeExists 
+  let resourceExists
+  let collection = "colony";
+  let query = { _id: new ObjectId(colonyId) };
 
-  var collection = "colony";
-  var query = { _id: new ObjectId(colonyId) };
-  // TODO Correct the fields
-  var upgrade = 
-  {
-    $set: {
-      $upgradeId: upgradeLevel
-    },
-    $currentDate: {
-      time: { 
-        $type: "timestamp" 
-      }
-    }
+  try {
+    userExists = await isUserInDb(username);
+    colonyExists = await isColonyInDb(colonyId);
+    upgradeExists = await isUpgradeInDb(upgradeId);
+    resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+  } catch (error) {
+    console.log(error);
   }
+
+  // TODO Correct the fields
+  let array = colonyExists[0].buildings;
+  let buildings = array;
+  buildings[upgradeId] = upgradeLevel;
+
   console.log(upgrade);
   // TODO check for if the player owns the colony
   // TODO check for if the upgrade is possible
-  // Check request for problems
-  //console.log(userExists);
   if (userExists[1]) {
     console.log("User exists");
     if (colonyExists[1]) {
       console.log("Colony exists");
       if (upgradeExists[1]) {
         console.log("Upgrade exists");
-        if (resourceExists[1]) {
-          console.log("Resources exist");
-          // Päivitä DB
-          // Palauta päivitetty colony
-          var colony = await findAndUpdateFromDatabase(collection, query, upgrade);
-          console.log(colony);
-          resolve(colony);
-          return;
+        if (resourceExists) {
+          try {
+            console.log("Resources exist");
+            let colony = await findAndUpdateFromDatabase(collection, query, 
+            {
+              $set: {
+                time: new Date().getTime(),
+                resource1: 333,
+                resource2: 22,
+                resource3: 1,
+                buildings
+              }
+            });    
+            console.log("----------");
+            console.log(colony);
+            resolve(colony);
+            return;
+          } catch (error) {
+            console.log(error);
+          }
         }
+        resolve("Not enough resources");
+        return;
       }
+      resolve("Upgrade doesn't exist");
+      return;
     }
+    resolve("Colony doesn't exist");
+    return;
   }
+  resolve("User doesn't exist");
+  return;
 })
 
 
@@ -96,22 +116,40 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
  * @param {*} username username to create account with
  * @returns array [user, colony]
  */
-const createUser = (username) => new Promise((resolve, reject) => {
+const createUser = (username) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   // Create colony for the user
-  var colony = {
+  let buildingIds;
+  try {
+    buildingIds = await db.collection("buildings").find().toArray();
+
+  } catch (error) {
+    console.log("Cannot access buildings. Aborting createUser!");
+    return;
+  }
+  
+  let colony = {
     resource1: 0,
     resource2: 0,
     resource3: 0,
-    resource1Level: 1,
-    resource2Level: 1,
-    resource3Level: 1,
+    buildings: {},
     time: new Date().getTime()
   }
 
+  // set levels for buildings
+  for (let i = 0; i < buildingIds.length; i++) {
+    if (i < 3) { // while building is resource building ie. first 3 buildings
+      let id = buildingIds[i]._id;
+      colony.buildings[id] = 1;
+    } else {
+      let id = buildingIds[i]._id;
+      colony.buildings[id] = 0;
+    }
+  }
+
   // Create user to be saved
-  var user = {
+  let user = {
     username: username,
     password: "hash",
     email: "email@asd.com",
@@ -144,10 +182,11 @@ const createUser = (username) => new Promise((resolve, reject) => {
 const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
+  let result;
 
   // Database query
   try {
-    var result = await db.collection(collection).findOne(query);
+    result = await db.collection(collection).findOne(query);
   } catch (error) {
     console.log(error);
   }
@@ -168,15 +207,17 @@ const findDocumentFromDatabase = (collection, query) => new Promise( async (reso
 const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
+  let result;
 
   // Database query
   try {
-    var result = await db.collection(collection).findOneAndUpdate(query, updatedDocument, {returnNewDocument: true});
+    result = await db.collection(collection).findOneAndUpdate(query, updatedDocument, {returnOriginal: false});
+    console.log("@219" + JSON.stringify(result.value, null, 1));
   } catch (error) {
     console.log(error);
   }
   console.log("findDocumentFromDatabase() called.");
-  resolve(result);
+  resolve(result.value);
   return;
 })
 
@@ -190,10 +231,11 @@ const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Pr
 const insertDocumentIntoDatabase = (collection, document) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
+  let _id;
 
   // Database query
   try {
-    var _id = await db.collection(collection).insertOne(document).insertedId;
+    _id = await db.collection(collection).insertOne(document).insertedId;
     console.log(_id);
   } catch (error) {
     console.log(error);
@@ -214,9 +256,9 @@ const insertDocumentIntoDatabase = (collection, document) => new Promise( async 
 const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
-
+  let deleted;
   try {
-    var deleted = await db.collection(collection).removeOne(query);
+    deleted = await db.collection(collection).removeOne(query);
     console.log(deleted)
   } catch (error) {
     console.log(error);
@@ -236,11 +278,11 @@ const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
   const db = dbo.db("protoelf");
   const collection = "buildings";
 
-  var array = await db.collection(collection).find().toArray()
+  let array = await db.collection(collection).find().toArray()
 
   if ( array.length === 0) { // if buildings are not in database
     try {
-      var buildingIds = await db.collection(collection).insertMany(BUILDINGS);
+      let buildingIds = await db.collection(collection).insertMany(BUILDINGS);
       buildingIds = buildingIds.insertedIds;
       array = Object.values(buildingIds).map(building => {
         return building;
@@ -268,8 +310,8 @@ const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
 const isUserInDb = (username) => new Promise( async (resolve, reject) => {
-  var query = {username: username};
-  var collection = "player";
+  let query = {username: username};
+  let collection = "player";
   findDocumentFromDatabase(collection,query).then((user) => {
     if (user !== null) {
       resolve([user, true]);
@@ -290,8 +332,8 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
 const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
-  var query = { _id: new ObjectId(colonyId) };
-  var collection = "colony";
+  let query = { _id: new ObjectId(colonyId) };
+  let collection = "colony";
   findDocumentFromDatabase(collection,query).then((colony) => {
     if (colony !== null) {
       resolve([colony, true]);
@@ -312,12 +354,12 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
 const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
-  var query = { _id: new ObjectId(upgradeId) };
-  var collection1 = "buildings";
-  var collection2 = "tech";
+  let query = { _id: new ObjectId(upgradeId) };
+  let collection1 = "buildings";
+  let collection2 = "tech";
 
   try {
-    var document = await findDocumentFromDatabase(collection1, query); // is in building db?
+    let document = await findDocumentFromDatabase(collection1, query); // is in building db?
     if (document === null) {
       document = await findDocumentFromDatabase(collection2, query);  // is in tech db?
       if (document === null) {
@@ -346,10 +388,10 @@ const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
  */
 const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
   /*
-  var upgradeQuery = { _id: new ObjectId(upgradeId) };
-  var colonyQuery = { _id: new ObjectId(colonyId) };
-  var upgradeCollection = "upgrade";
-  var colonyCollection = "colony";
+  let upgradeQuery = { _id: new ObjectId(upgradeId) };
+  let colonyQuery = { _id: new ObjectId(colonyId) };
+  let upgradeCollection = "upgrade";
+  let colonyCollection = "colony";
   */
 
   resolve(true);
@@ -373,18 +415,16 @@ module.exports = {
 }
 
 
-var colonySyntax = {
+let colonySyntax = {
   _id: "id",
   resource1: 0,
   resource2: 0,
   resource3: 0,
-  resource1Level: 1,
-  resource2Level: 1,
-  resource3Level: 1,
+  buildings: ["id", "id"],
   time: "ms"
 };
 
-var userSyntax = {
+let userSyntax = {
   _id: "id",
   username: "username",
   password: "hash",
@@ -392,7 +432,7 @@ var userSyntax = {
   colonies: ["colonyID", "colonyID"]
 }
 
-var planetSyntax = {
+let planetSyntax = {
   _id: "id",
   username: "username",
   password: "hash",
@@ -402,51 +442,45 @@ var planetSyntax = {
 
 
 
-var buildingIds = [];
+let buildingIds = [];
 
-var resGen1 = {
+let resGen1 = {
   name: "Resource 1 generator",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18
 }
 
-var resGen2 = {
+let resGen2 = {
   name: "Resource 2 generator",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18
 }
 
-var resGen3 = {
+let resGen3 = {
   name: "Resource 3 generator",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18
 }
 
-var starport = {
+let starport = {
   name: "Starport",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18
 }
 
-var barracks = {
+let barracks = {
   name: "Barracks",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18
 }
 
-var tradingPost = {
+let tradingPost = {
   name: "Trading post",
-  level: 1,
   priceResource1: 1,
   priceResource2: 3,
   priceResource3: 18

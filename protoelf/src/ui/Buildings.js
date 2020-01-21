@@ -4,11 +4,19 @@ import image from './building_placeholder.png'
 /*
 * Container where context specific items are shown
 */
-const Buildings = ({upgrade, buildings}) =>  {
+const Buildings = ({upgrade, buildings, currentColony}) =>  {
 
   const handleClick = (buildingId) => {
-    console.log(buildingId);
     upgrade(buildingId);
+  }
+
+  const combineData = (building) => {
+    let array = Object.keys(currentColony);
+    for (let field of array) {
+      if (building._id === field) {
+        return currentColony[field];
+      }
+    }
   }
 
   if (buildings === undefined) {
@@ -19,6 +27,8 @@ const Buildings = ({upgrade, buildings}) =>  {
   return (
     <div className="buildingGrid">
       {buildings.map((building) => {
+        let level = combineData(building);
+        console.log("render")
         return (
           <div key={building._id} value={building._id} className="building" onClick={() => handleClick(building._id)}>
             <div className="building_img">
@@ -30,7 +40,7 @@ const Buildings = ({upgrade, buildings}) =>  {
               </div>
             </div>
             <div>{building.name}</div>
-            <div>Level: </div>
+        <div>Level: {level}</div>
           </div>
         )
       })}

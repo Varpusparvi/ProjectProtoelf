@@ -19,18 +19,15 @@ const App = () =>  {
     resource1: 0,
     resource2: 0,
     resource3: 0,
-    resource1Level: 0,
-    resource2Level: 0,
-    resource3Level: 0,
   });
   const [viewMode, setViewMode] = useState(2);
   const [buildings, setBuildings] = useState();
-  const [res1, setRes1] = useState(0);
-  const [res2, setRes2] = useState(0);
-  const [res3, setRes3] = useState(0);
-  const [res1Rate, setRes1Rate] = useState(1);
-  const [res2Rate, setRes2Rate] = useState(3);
-  const [res3Rate, setRes3Rate] = useState(18);
+  const [res1, setRes1] = useState();
+  const [res2, setRes2] = useState();
+  const [res3, setRes3] = useState();
+  const [res1Rate, setRes1Rate] = useState();
+  const [res2Rate, setRes2Rate] = useState();
+  const [res3Rate, setRes3Rate] = useState();
 
   // Resource meter updater
   useInterval(() => {
@@ -66,16 +63,20 @@ const App = () =>  {
   }
 
 
+  /**
+   * Sets values for the resources
+   * @param {*} json colony info
+   */
   const setResources = (json) => {
-    let _res1Rate = ResourceMining.getResourceRate(1,json.resource1Level);
-    let _res2Rate = ResourceMining.getResourceRate(2,json.resource2Level);
-    let _res3Rate = ResourceMining.getResourceRate(3,json.resource3Level);
+    let buildingIndex0 = Object.keys(json.buildings)[0];
+    let buildingIndex1 = Object.keys(json.buildings)[1];
+    let buildingIndex2 = Object.keys(json.buildings)[2];
+    let _res1Rate = ResourceMining.getResourceRate(1,json.buildings[buildingIndex0]);  //
+    let _res2Rate = ResourceMining.getResourceRate(2,json.buildings[buildingIndex1]);
+    let _res3Rate = ResourceMining.getResourceRate(3,json.buildings[buildingIndex2]);
     setRes1(json.resource1);
     setRes2(json.resource2);
     setRes3(json.resource3);
-    console.log(_res1Rate);
-    console.log(_res2Rate);
-    console.log(_res3Rate);
     setRes1Rate(_res1Rate);
     setRes2Rate(_res2Rate);
     setRes3Rate(_res3Rate);
@@ -91,7 +92,7 @@ const App = () =>  {
       var username = e.target.value;
 
       let json = await createOrFetchPlayer(username);
-      console.log(json);
+      console.log(json[1].buildings);
       if (json === null || json === undefined) {
         return;
       }
@@ -101,10 +102,6 @@ const App = () =>  {
       setCurrentColony(json[1]);
       setResources(json[1]);
       setBuildings(json[2]);
-
-      var _res1Rate = ResourceMining.getResourceRate(1,json[1].resource1Level);
-      var _res2Rate = ResourceMining.getResourceRate(2,json[1].resource2Level);
-      var _res3Rate = ResourceMining.getResourceRate(3,json[1].resource3Level);
     }
   }
 
@@ -141,6 +138,20 @@ const App = () =>  {
    * @param {*} id id of an object to be upgraded
    */
   const upgrade = async (id) => {
+    let array = Object.keys(currentColony.buildings);
+    let upgradeToLevel;
+    console.log(currentColony.buildings);
+
+    for (let i of array) {
+      if (id === i) {
+        upgradeToLevel = currentColony.buildings[i] + 1;
+        console.log("ous");
+      }
+    }
+
+    
+    console.log("APua: " + upgradeToLevel);
+    // Send HTTP request
     await fetch(serverUrl + "building", {
       method: "POST",
       headers: {
@@ -150,7 +161,7 @@ const App = () =>  {
       body: JSON.stringify({
         username: user.username,
         upgradeId: id,
-        upgradeLevel: 2,
+        upgradeLevel: upgradeToLevel, // TODO
         colonyId: currentColony._id,
       })
     })
@@ -160,20 +171,9 @@ const App = () =>  {
           return;
         }
         console.log(json);
+        setCurrentColony(json);
+        setResources(json);
         // TODO
-        var _res1 = json.resource1;
-        var _res2 = json.resource2;
-        var _res3 = json.resource3;
-        var _res1Rate = ResourceMining.getResourceRate(1,json.resource1Level);
-        var _res2Rate = ResourceMining.getResourceRate(2,json.resource2Level);
-        var _res3Rate = ResourceMining.getResourceRate(3,json.resource3Level);
-        setRes1(_res1);
-        setRes2(_res2);
-        setRes3(_res3);
-        setRes1Rate(_res1Rate);
-        setRes2Rate(_res2Rate);
-        setRes3Rate(_res3Rate);
-
       })
     }).catch((error) => {
       console.log(error)
@@ -219,7 +219,8 @@ const App = () =>  {
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
         <div>Res 3: {res3}</div>
-        <MainContainer viewMode={viewMode} upgrade={upgrade} buildings={buildings}></MainContainer>
+        <MainContainer viewMode={viewMode} upgrade={upgrade} 
+            buildings={buildings} currentColony={currentColony.buildings}></MainContainer>
     </div>
   );
 }

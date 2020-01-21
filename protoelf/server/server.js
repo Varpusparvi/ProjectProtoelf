@@ -16,12 +16,10 @@ var tech = [];
 */
 DB.initDb( async () => {
   let buildingIds = await ServerHelper.addBuildingsToDb();
-
   buildings = await Promise.all(buildingIds.map(( async (buildingId) => {
     let b = await ServerHelper.isUpgradeInDb(buildingId);
     return b[0];
   })))
-  console.log(buildings);
   console.log("Loaded buildings into memory!");
 
   app.listen(port, () => console.log(`Listening on port ${port}`));
