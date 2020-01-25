@@ -10,15 +10,24 @@ var serverUrl = 'http://localhost:8080/';
 * Protoelf main screen
 */
 const App = () =>  {
+  const [user, setUser] = useState({
+    _id : undefined,
+    username: "",
+  });
+  const [currentColony, setCurrentColony] = useState({
+    _id : 1,
+    resource1: 0,
+    resource2: 0,
+    resource3: 0,
+  });
   const [viewMode, setViewMode] = useState(2);
-  const [res1, setRes1] = useState(0);
-  const [res2, setRes2] = useState(0);
-  const [res3, setRes3] = useState(0);
-  const [res1Rate, setRes1Rate] = useState(1);
-  const [res2Rate, setRes2Rate] = useState(3);
-  const [res3Rate, setRes3Rate] = useState(18);
-  const [user, setUser] = useState();
-  const [currentColony, setCurrentColony] = useState();
+  const [buildings, setBuildings] = useState();
+  const [res1, setRes1] = useState();
+  const [res2, setRes2] = useState();
+  const [res3, setRes3] = useState();
+  const [res1Rate, setRes1Rate] = useState();
+  const [res2Rate, setRes2Rate] = useState();
+  const [res3Rate, setRes3Rate] = useState();
 
   // Resource meter updater
   useInterval(() => {
@@ -31,58 +40,77 @@ const App = () =>  {
   const changeModeOverview = (e) => {
     console.log(e.target.textContent);
     setViewMode(0);
-    fetchData();
   }
 
   const changeModePlanet = (e) => {
     console.log(e.target.textContent);
     setViewMode(1);
-    fetchData();
   }
 
   const changeModeBuildings = (e) => {
     console.log(e.target.textContent);
     setViewMode(2);
-    fetchData();
   }
 
   const changeModeForces = (e) => {
     console.log(e.target.textContent);
     setViewMode(3);
-    fetchData();
   }
 
   const changeModeStarmap = (e) => {
     console.log(e.target.textContent);
     setViewMode(4);
-    fetchData();
   }
 
+
+  /**
+   * Sets values for the resources
+   * @param {*} json colony info
+   */
+  const setResources = (json) => {
+    let buildingIndex0 = Object.keys(json.buildings)[0];
+    let buildingIndex1 = Object.keys(json.buildings)[1];
+    let buildingIndex2 = Object.keys(json.buildings)[2];
+    let _res1Rate = ResourceMining.getResourceRate(1,json.buildings[buildingIndex0]);  //
+    let _res2Rate = ResourceMining.getResourceRate(2,json.buildings[buildingIndex1]);
+    let _res3Rate = ResourceMining.getResourceRate(3,json.buildings[buildingIndex2]);
+    setRes1(json.resource1);
+    setRes2(json.resource2);
+    setRes3(json.resource3);
+    setRes1Rate(_res1Rate);
+    setRes2Rate(_res2Rate);
+    setRes3Rate(_res3Rate);
+  }
+
+
+  /**
+   * Handles login and registering
+   * @param {*} e value of input field
+   */
   const loginHandler = async (e) => {
     if (e.keyCode === 13) {
       var username = e.target.value;
-      await createOrFetchPlayer(username);
+
+      let json = await createOrFetchPlayer(username);
+      console.log(json[1].buildings);
+      if (json === null || json === undefined) {
+        return;
+      }
+
+      // init app
+      setUser(json[0]);
+      setCurrentColony(json[1]);
+      setResources(json[1]);
+      setBuildings(json[2]);
     }
   }
 
-  /*
-  * Basic get without data
-  */
-  const fetchData = async () => {
-    await fetch(serverUrl).then((response) => {
-      response.json().then((json) => {
-        console.log(json);
-      })
-    }).catch((e) => {
-      console.log(e);
-    })
-  }
 
   /*
   * Function for fetching player data from the server
   */
-  const createOrFetchPlayer = async (username) => {
-    await fetch(serverUrl + "login", {
+  const createOrFetchPlayer = (username) => new Promise((resolve, reject) => {
+    fetch(serverUrl + "login", {
       method: "POST",
       headers: {
         'Accept': 'application/json',
@@ -94,29 +122,70 @@ const App = () =>  {
     })
     .then((response) => {
       response.json().then((json) => {
-        setUser(json);
-        // Tähän systeemi jolla saahaan res1,2,3 arvot asetettua
-        var _res1 = json[1].res1;
-        var _res2 = json[1].res2;
-        var _res3 = json[1].res3;
-        var _res1Rate = ResourceMining.getResourceRate(1,json[1].res1Lvl);
-        var _res2Rate = ResourceMining.getResourceRate(2,json[1].res2Lvl);
-        var _res3Rate = ResourceMining.getResourceRate(3,json[1].res3Lvl);
-        setRes1(_res1);
-        setRes2(_res2);
-        setRes3(_res3);
-        setRes1Rate(_res1Rate);
-        setRes2Rate(_res2Rate);
-        setRes3Rate(_res3Rate);
-        setUser(json[0]);
-
-        console.log(json);
+        resolve(json);
+        return json;
+      }).catch((error) => {
+        console.log(error);
       })
-    }).catch((e) => {
-      console.log(e);
+    }).catch((error) => {
+      console.log(error);
+    })
+  })
+
+
+  /**
+   * Upgrades a building or tech with given id
+   * @param {*} id id of an object to be upgraded
+   */
+  const upgrade = async (id) => {
+    let array = Object.keys(currentColony.buildings);
+    let upgradeToLevel;
+    console.log(currentColony.buildings);
+
+    for (let i of array) {
+      if (id === i) {
+        upgradeToLevel = currentColony.buildings[i] + 1;
+        console.log("ous");
+      }
+    }
+
+    
+    console.log("APua: " + upgradeToLevel);
+    // Send HTTP request
+    await fetch(serverUrl + "building", {
+      method: "POST",
+      headers: {
+        'Accept' : 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: user.username,
+        upgradeId: id,
+        upgradeLevel: upgradeToLevel, // TODO
+        colonyId: currentColony._id,
+      })
+    })
+    .then((response) => {
+      response.json().then((json) => {
+        if (json === null) {
+          return;
+        }
+        console.log(json);
+        setCurrentColony(json);
+        setResources(json);
+        // TODO
+      })
+    }).catch((error) => {
+      console.log(error)
     })
   }
 
+
+  /**
+   * Define "useInterval" function that is functionally the same as "setInterval()
+   * @param {*} callback function to be executed
+   * @param {*} delay time between executions in ms
+   */
   function useInterval(callback, delay) {
     const savedCallback = useRef();
   
@@ -150,7 +219,8 @@ const App = () =>  {
         <div>Res 1: {res1}</div>
         <div>Res 2: {res2}</div>
         <div>Res 3: {res3}</div>
-        <MainContainer viewMode={viewMode}></MainContainer>
+        <MainContainer viewMode={viewMode} upgrade={upgrade} 
+            buildings={buildings} currentColony={currentColony.buildings}></MainContainer>
     </div>
   );
 }

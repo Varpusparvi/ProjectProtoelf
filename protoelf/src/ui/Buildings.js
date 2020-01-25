@@ -4,80 +4,33 @@ import image from './building_placeholder.png'
 /*
 * Container where context specific items are shown
 */
-const Buildings = () =>  {
+const Buildings = ({upgrade, buildings, currentColony}) =>  {
 
-  var resGen1 = {
-    id: 1,
-    name: "Resource 1 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
+  const handleClick = (buildingId) => {
+    upgrade(buildingId);
   }
 
-  var resGen2 = {
-    id: 2,
-    name: "Resource 2 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
+  const combineData = (building) => {
+    let array = Object.keys(currentColony);
+    for (let field of array) {
+      if (building._id === field) {
+        return currentColony[field];
+      }
+    }
   }
 
-  var resGen3 = {
-    id: 3,
-    name: "Resource 3 generator",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
+  if (buildings === undefined) {
+    return (
+      <div>No buildings found. This is probably caused by no access to the server</div>
+    )
   }
-
-  var starport = {
-    id: 4,
-    name: "Starport",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var barracks = {
-    id: 5,
-    name: "Barracks",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  var tradingPost = {
-    id: 6,
-    name: "Trading post",
-    level: 1,
-    priceResource1: 1,
-    priceResource2: 3,
-    priceResource3: 18
-  }
-
-  const BUILDINGS = [
-    resGen1,
-    resGen2,
-    resGen3,
-    starport,
-    barracks,
-    tradingPost
-  ]
-
-  const handleClick = (id) => {
-    console.log(id);
-  }
-
   return (
     <div className="buildingGrid">
-      {BUILDINGS.map((building) => {
+      {buildings.map((building) => {
+        let level = combineData(building);
+        console.log("render")
         return (
-          <div key={building.id} value={building.id} className="building" onClick={() => handleClick(building.id)}>
+          <div key={building._id} value={building._id} className="building" onClick={() => handleClick(building._id)}>
             <div className="building_img">
               <img src={image} alt=""></img>
               <div className="price">
@@ -87,6 +40,7 @@ const Buildings = () =>  {
               </div>
             </div>
             <div>{building.name}</div>
+        <div>Level: {level}</div>
           </div>
         )
       })}
