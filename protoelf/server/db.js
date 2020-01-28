@@ -10,12 +10,20 @@ module.exports = {
   initDb
 }
 
+
+/**
+ * Returns database
+ */
 function getDb() {
   assert.ok(_db, "Db has not been initialized. Please called init first.");
   return _db;
 }
 
 
+/**
+ * Initializes the database connection
+ * @param {*} callback 
+ */
 function initDb(callback) {
   if (_db) {
       console.warn("Trying to init DB again!");
