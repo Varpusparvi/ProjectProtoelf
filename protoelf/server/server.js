@@ -10,7 +10,6 @@ var tech = [];
 
 
 
-
 /*
 * Starts connection to db and listens to port
 */
