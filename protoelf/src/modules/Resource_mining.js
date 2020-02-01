@@ -127,9 +127,9 @@ export function getResourcesDuringTime(resource, colony_id, time_from, time_to){
     var total_resources=0;
     var total_arr = [];
     var bonus = 0; // Tähän mahd generation bonus databasesta
-    var level = //migi, tähän minen level databasesta colony id:llä
+    var level; //migi, tähän minen level databasesta colony id:llä
     var unstable_level = level; 
-    var level_upgrade_array = // migi, tähän ne madh päivitykset mineen databasesta, oletus arvona annetaan [] eli tyhjä array
+    var level_upgrade_array; // migi, tähän ne madh päivitykset mineen databasesta, oletus arvona annetaan [] eli tyhjä array
     
     if(typeof level_upgrade_array !== 'undefined' && level_upgrade_array.length > 0){
         if(level_upgrade_array.length === 1){
@@ -178,9 +178,9 @@ export function getResourcesDuringTime(resource, colony_id, time_from, time_to){
 // Checks if the colony has enough resources for the next mine level
 // Returns true or false
 export function checkCanUpgrade(resource, colony_id){
-    var level = //migi, Tähän taas minen lvl databasesta
-    var r1 = //migi, Tähän pelaajan resurssit databasesta
-    var r2 //migi, tähän sama toiselle resurssille
+    var level; //migi, Tähän taas minen lvl databasesta
+    var r1; //migi, Tähän pelaajan resurssit databasesta
+    var r2;//migi, tähän sama toiselle resurssille
     var arr = getCostToNextLevel(resource, player_id);
     if(arr[0]>=r1 && arr[1]>=r2){
         return true;
