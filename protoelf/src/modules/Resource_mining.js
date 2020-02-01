@@ -1,4 +1,4 @@
-import { Double } from "mongodb";
+
 
 /* Module functions:
 - getResourceRate
@@ -179,7 +179,7 @@ export function getResourcesDuringTime(resource, colony_id, time_from, time_to){
 
 // Checks if the colony has enough resources for the next mine level
 // Returns true or false
-export function chechCanUpgrade(resource, colony_id){
+export function checkCanUpgrade(resource, colony_id){
     var level = //migi, Tähän taas minen lvl databasesta
     var r1 = //migi, Tähän pelaajan resurssit databasesta
     var r2 //migi, tähän sama toiselle resurssille

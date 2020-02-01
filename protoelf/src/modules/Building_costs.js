@@ -1,4 +1,4 @@
-import { Double } from "mongodb";
+
 
 /* Module functions
 
@@ -17,10 +17,12 @@ var building_equations = [
 
 export function getBuildingCost(name_id, colony_id){
     var level = 5// migi, haetaan databasesta colony_idllä
-    var equation = building_equations.map(name_id); // Voiko mapissa olla 3 
+    var equation = building_equations.map(name_id);
+    
     return equation(level);
-    console.log(equation)
+    
     
     
 }
 
+console.log(getBuildingCost(s,s))
