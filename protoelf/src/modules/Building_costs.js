@@ -3,19 +3,28 @@
 */
 // Building costs stored in a map
 var building_equations = [
-    {name: "b1", eq: function formula(n) { return 2*level}},
-    {name: "b2", eq: "3 * level + ( level + level ) / 3"}
+    {name: "b1", eq: (n) => { return 2*n}},
+    {name: "b2", eq: (n) => { return 1*n}}
 ];
 
 
 
 
-export function getBuildingCost(name_id, colony_id){
+function getBuildingCost(name_id, colony_id){
     var level = 5// migi, haetaan databasesta colony_idllä
-    var equation = building_equations.map(name_id);
+    var i = 0;
+    for ( j in building_equations ){
+        if(building_equations[i].name === name_id){
+            return building_equations[i].eq(level);
+        }
+        else{
+            ++i;
+        }
+    }
+    return "error";
     
-    return equation(level);
-    console.log(equation)
+    
+    
 }
 
-console.log(getBuildingCost(s,s))
+console.log(getBuildingCost("b2",5))
