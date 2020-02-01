@@ -7,9 +7,6 @@
 - updateResources
 */
 
-// Setting up the database variable
-var dbo = db.db('protoelf'); // Change
-
 // Resource generation equations
 const eqRateRes1Hour = (n) => {
     return (Math.pow(n,2));
@@ -50,6 +47,7 @@ const eqCostToNextLevelMine3Res2 = (c) => {
 // await dbo.collection('colony').findOne(playerQuery)
 // Returns the resource rate for spesific resource per hour with possible resource generation bonus
 export function getResourceRate(resource, colony_id) {
+    let level = 1;
     var n = level; //migi, find mine level from database using player/colony id (?)
     var bonus = 0; //migi, find resource generation bonus from database using id
     var eq;
@@ -178,10 +176,10 @@ export function getResourcesDuringTime(resource, colony_id, time_from, time_to){
 // Checks if the colony has enough resources for the next mine level
 // Returns true or false
 export function checkCanUpgrade(resource, colony_id){
+    var arr = getCostToNextLevel(resource, colony_id);
     var level; //migi, Tähän taas minen lvl databasesta
     var r1; //migi, Tähän pelaajan resurssit databasesta
     var r2;//migi, tähän sama toiselle resurssille
-    var arr = getCostToNextLevel(resource, player_id);
     if(arr[0]>=r1 && arr[1]>=r2){
         return true;
     }

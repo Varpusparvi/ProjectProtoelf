@@ -393,7 +393,7 @@ const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( as
   let upgradeCollection = "upgrade";
   let colonyCollection = "colony";
   */
-
+  // TODO
   resolve(true);
   return;
 })
