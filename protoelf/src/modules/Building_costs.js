@@ -1,11 +1,4 @@
-import { Double } from "mongodb";
-
 /* Module functions
-
-
-
-
-
 
 */
 // Building costs stored in a map
@@ -15,12 +8,12 @@ var building_equations = [
 ];
 
 
+
+
 export function getBuildingCost(name_id, colony_id){
     var level = 5// migi, haetaan databasesta colony_idllä
     var equation = building_equations.map(name_id); // Voiko mapissa olla 3 
     return equation(level);
     console.log(equation)
-    
-    
 }
 

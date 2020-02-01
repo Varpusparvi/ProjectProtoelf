@@ -1,5 +1,3 @@
-import { Double } from "mongodb";
-
 /* Module functions:
 - getResourceRate
 - getCostToNextLevel
