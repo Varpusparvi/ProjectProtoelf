@@ -1,6 +1,8 @@
 "use strict";
 const DB = require('./db.js');
 let ObjectId = require('mongodb').ObjectID
+const Resource = require('./resource_mining.js');
+
 //let ResourceMining = require('../src/modules/resource_mining.js');
 
 
@@ -79,13 +81,21 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
         if (resourceExists) {
           try {
             console.log("Resources exist");
-            let colony = await findAndUpdateFromDatabase(collection, query, 
+            let colony = await findDocumentFromDatabase("colony", query);
+            colony.resource1;
+            colony.resource2;
+            colony.resource3;
+            let time = new Date().getTime();
+            time = time - colony.time;
+            let resources = Resource.updateResources(colonyId, time);
+
+            colony = await findAndUpdateFromDatabase(collection, query, 
             {
               $set: {
                 time: new Date().getTime(),
-                resource1: 333,
-                resource2: 22,
-                resource3: 1,
+                resource1: resources[0],   // TODO
+                resource2: resources[1],
+                resource3: resources[2],
                 buildings
               }
             });    
