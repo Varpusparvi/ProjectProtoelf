@@ -1,9 +1,7 @@
-"use strict";
-const DB = require('./db.js');
-let ObjectId = require('mongodb').ObjectID
 const Resource = require('./resource_mining.js');
-
-//let ResourceMining = require('../src/modules/resource_mining.js');
+const Database = require('./db_functions.js');
+const DB = require('./db.js');
+let ObjectId = require('mongodb').ObjectID;
 
 
 /**
@@ -17,12 +15,12 @@ const login = (username) => new Promise((resolve, reject) => {
   // Try to find user from database
   let userQuery = { username: username };
   try {
-    findDocumentFromDatabase("player", userQuery).then( async (user) => {
+    Database.findDocumentFromDatabase("player", userQuery).then( async (user) => {
       if (user !== undefined && user !== null) {  // continue if user is found
         // try to find colony from database
         let colonyId = user.colonies[0];
         let colonyQuery = { _id: new ObjectId(colonyId) };
-        findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
+        Database.findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
           resolve([user, colony]); // Returns user and colony
           return;
         })
@@ -81,7 +79,7 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
         if (resourceExists) {
           try {
             console.log("Resources exist");
-            let colony = await findDocumentFromDatabase("colony", query);
+            let colony = await Database.findDocumentFromDatabase("colony", query);
             colony.resource1;
             colony.resource2;
             colony.resource3;
@@ -89,7 +87,7 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
             time = time - colony.time;
             let resources = Resource.updateResources(colonyId, time);
 
-            colony = await findAndUpdateFromDatabase(collection, query, 
+            colony = await Database.findAndUpdateFromDatabase(collection, query, 
             {
               $set: {
                 time: new Date().getTime(),
@@ -183,136 +181,6 @@ const createUser = (username) => new Promise( async (resolve, reject) => {
 })
 
 
-/**
- * Searches for a single document in the database
- * @param {*} collection Name of the collection in database
- * @param {*} query Query used to find target document
- * @returns Single matching document
- */
-const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
-  const dbo = DB.getDb();
-  const db = dbo.db("protoelf");
-  let result;
-
-  // Database query
-  try {
-    result = await db.collection(collection).findOne(query);
-  } catch (error) {
-    console.log(error);
-  }
-  console.log("findDocumentFromDatabase() called.");
-  resolve(result);
-  return;
-})
-
-
-/**
- * Updates a single document in the database
- * @param {*} collection Name of the collection in database
- * @param {*} query Query used to find target document
- * @param {*} updatedDocument modification or updated document {<operator1>: { <field1>: <value1>, ... },}
- * @returns Updated document
- * https://docs.mongodb.com/manual/reference/operator/update/#id1
- */
-const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Promise( async (resolve, reject) => {
-  const dbo = DB.getDb();
-  const db = dbo.db("protoelf");
-  let result;
-
-  // Database query
-  try {
-    result = await db.collection(collection).findOneAndUpdate(query, updatedDocument, {returnOriginal: false});
-    console.log("@219" + JSON.stringify(result.value, null, 1));
-  } catch (error) {
-    console.log(error);
-  }
-  console.log("findDocumentFromDatabase() called.");
-  resolve(result.value);
-  return;
-})
-
-
-/**
- * Inserts a single document into the database
- * @param {*} collection Name of the collection in database
- * @param {*} document Document which to insert. JSON.
- * @returns Generated _id of the document
- */
-const insertDocumentIntoDatabase = (collection, document) => new Promise( async (resolve, reject) => {
-  const dbo = DB.getDb();
-  const db = dbo.db("protoelf");
-  let _id;
-
-  // Database query
-  try {
-    _id = await db.collection(collection).insertOne(document).insertedId;
-    console.log(_id);
-  } catch (error) {
-    console.log(error);
-  }
-  
-  console.log("insertDocumentIntoDatabase() called.");
-  resolve(_id);
-  return;
-})
-
-
-/**
- * Deletes a single document from the database
- * @param {*} collection Name of the collection in database
- * @param {*} query Query used to find target document
- * @returns ????
- */
-const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
-  const dbo = DB.getDb();
-  const db = dbo.db("protoelf");
-  let deleted;
-  try {
-    deleted = await db.collection(collection).removeOne(query);
-    console.log(deleted)
-  } catch (error) {
-    console.log(error);
-  }
-  resolve(deleted);
-  return;
-})
-
-
-/**
- * Adds buildings to database
- * buildings are defined in server_functions.js
- * @returns array of ids of buildings
- */
-const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
-  const dbo = DB.getDb();
-  const db = dbo.db("protoelf");
-  const collection = "buildings";
-
-  let array = await db.collection(collection).find().toArray()
-
-  if ( array.length === 0) { // if buildings are not in database
-    try {
-      let buildingIds = await db.collection(collection).insertMany(BUILDINGS);
-      buildingIds = buildingIds.insertedIds;
-      array = Object.values(buildingIds).map(building => {
-        return building;
-      })
-    } catch (error) {
-      console.log(error);
-    }
-  } else {    // if buildings are in database
-    try {
-      array = array.map(building => {
-        return building._id;
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  resolve(array);
-  return;
-})
-
 
 /**
  * Gets the document with given username
@@ -322,7 +190,7 @@ const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
 const isUserInDb = (username) => new Promise( async (resolve, reject) => {
   let query = {username: username};
   let collection = "player";
-  findDocumentFromDatabase(collection,query).then((user) => {
+  Database.findDocumentFromDatabase(collection,query).then((user) => {
     if (user !== null) {
       resolve([user, true]);
       return;
@@ -344,7 +212,7 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
 const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
   let query = { _id: new ObjectId(colonyId) };
   let collection = "colony";
-  findDocumentFromDatabase(collection,query).then((colony) => {
+  Database.findDocumentFromDatabase(collection,query).then((colony) => {
     if (colony !== null) {
       resolve([colony, true]);
       return;
@@ -369,9 +237,9 @@ const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
   let collection2 = "tech";
 
   try {
-    let document = await findDocumentFromDatabase(collection1, query); // is in building db?
+    let document = await Database.findDocumentFromDatabase(collection1, query); // is in building db?
     if (document === null) {
-      document = await findDocumentFromDatabase(collection2, query);  // is in tech db?
+      document = await Database.findDocumentFromDatabase(collection2, query);  // is in tech db?
       if (document === null) {
         resolve([null, false]);
         return;
@@ -409,98 +277,11 @@ const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( as
 })
 
 
-
 module.exports = {
   login,
   upgrade,
-  findDocumentFromDatabase,
-  findAndUpdateFromDatabase,
-  insertDocumentIntoDatabase,
-  removeDocumentFromDatabase,
-  addBuildingsToDb,
   isUserInDb,
   isColonyInDb,
   isUpgradeInDb,
   isEnoughResources,
 }
-
-
-let colonySyntax = {
-  _id: "id",
-  resource1: 0,
-  resource2: 0,
-  resource3: 0,
-  buildings: ["id", "id"],
-  time: "ms"
-};
-
-let userSyntax = {
-  _id: "id",
-  username: "username",
-  password: "hash",
-  email: "email",
-  colonies: ["colonyID", "colonyID"]
-}
-
-let planetSyntax = {
-  _id: "id",
-  username: "username",
-  password: "hash",
-  email: "email",
-  colony: ["colonyID", "colonyID"]
-}
-
-
-
-let buildingIds = [];
-
-let resGen1 = {
-  name: "Resource 1 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-let resGen2 = {
-  name: "Resource 2 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-let resGen3 = {
-  name: "Resource 3 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-let starport = {
-  name: "Starport",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-let barracks = {
-  name: "Barracks",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-let tradingPost = {
-  name: "Trading post",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
-}
-
-const BUILDINGS = [
-  resGen1,
-  resGen2,
-  resGen3,
-  starport,
-  barracks,
-  tradingPost
-]

@@ -1,6 +1,7 @@
 "use strict";
 const DB = require('./db.js');
 const ServerHelper = require('./server_functions.js');
+const Database = require('./db_functions.js');
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 8080;
@@ -14,7 +15,7 @@ var tech = [];
 * Starts connection to db and listens to port
 */
 DB.initDb( async () => {
-  let buildingIds = await ServerHelper.addBuildingsToDb();
+  let buildingIds = await Database.addBuildingsToDb();
   buildings = await Promise.all(buildingIds.map(( async (buildingId) => {
     let b = await ServerHelper.isUpgradeInDb(buildingId);
     return b[0];
