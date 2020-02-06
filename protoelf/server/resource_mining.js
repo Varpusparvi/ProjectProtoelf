@@ -1,6 +1,6 @@
-
 const DB = require('./db.js');
 const ServerHelper = require('./server_functions.js');
+const Database = require('./db_functions.js');
 let ObjectId = require('mongodb').ObjectID
 /* Module functions:
 - getResourceRate
@@ -102,9 +102,9 @@ function getResourcesPerSecond(resource, colony_id){
 // Should be called every time action is being made/event happening
 //
 // Returns the amount of generated resources in spesific colony in certain time as an array [resource 1, resource 2, resource 3]
-function updateResources(colony_id, time_ms){
+async function updateResources(colony_id, time_ms) {
     let query = {_id: new ObjectId(colony_id)};
-    let colony = ServerHelper.findDocumentFromDatabase("colony", query);
+    let colony = await Database.findDocumentFromDatabase("colony", query);
     // Setting up the mine levels and bonuses for resource generation
     var level_res1 = colony.buildings[0];
     var level_res2 = colony.buildings[1];
