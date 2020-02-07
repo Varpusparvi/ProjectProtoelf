@@ -1,4 +1,4 @@
-const Resource = require('./resource_mining.js');
+const Resource = require('./resource_mining_server.js');
 const Database = require('./db_functions.js');
 const DB = require('./db.js');
 let ObjectId = require('mongodb').ObjectID;
