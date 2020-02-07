@@ -3,8 +3,6 @@ let ObjectId = require('mongodb').ObjectID;
 
 
 
-
-
 /**
  * Searches for a single document in the database
  * @param {*} collection Name of the collection in database

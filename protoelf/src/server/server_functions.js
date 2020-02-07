@@ -11,28 +11,54 @@ let ObjectId = require('mongodb').ObjectID;
  * @param {*} username username
  * @returns user
  */
-const login = (username) => new Promise((resolve, reject) => {
-  // Try to find user from database
+const login = (username) => new Promise(async (resolve, reject) => {
   let userQuery = { username: username };
+  // Try to find user from database
   try {
-    Database.findDocumentFromDatabase("player", userQuery).then( async (user) => {
-      if (user !== undefined && user !== null) {  // continue if user is found
-        // try to find colony from database
-        let colonyId = user.colonies[0];
-        let colonyQuery = { _id: new ObjectId(colonyId) };
-        Database.findDocumentFromDatabase("colony", colonyQuery).then((colony) => {
-          resolve([user, colony]); // Returns user and colony
-          return;
-        })
-      } else {
-        // Create new user if not found in database
-        user = await createUser(username);
-        resolve(user);
-        return;
-      }
-    })
+    let user = await Database.findDocumentFromDatabase("player", userQuery);
+    if (user !== undefined && user !== null) {
+      let colonyId = user.colonies[0];
+      let colonyQuery = { _id: new ObjectId(colonyId) };
+
+      let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
+      let levelsArray = Object.entries(colony.buildings);
+      let time = new Date().getTime();
+      time = time - colony.time;
+      levelsArray = [
+        levelsArray[0][1],
+        levelsArray[1][1],
+        levelsArray[2][1],
+      ];
+      currentResources = [
+        colony.resource1,
+        colony.resource2,
+        colony.resource3
+      ];
+      let resources = Resource.updateResources(time, levelsArray);
+      resources = [
+        currentResources[0] + resources[0],
+        currentResources[1] + resources[1],
+        currentResources[2] + resources[2]
+      ];
+      colony = await Database.findAndUpdateFromDatabase("colony", colonyQuery, 
+      {
+        $set: {
+          time: new Date().getTime(),
+          resource1: resources[0],
+          resource2: resources[1],
+          resource3: resources[2],
+        }
+      });
+      resolve([user, colony]);
+      return;
+    } else {
+      // Create new user if not found in database
+      user = await createUser(username);
+      resolve(user);
+      return;
+    }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 })
 
@@ -48,8 +74,8 @@ const login = (username) => new Promise((resolve, reject) => {
 const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
   let userExists;
   let colonyExists;
-  let upgradeExists 
-  let resourceExists
+  let upgradeExists;
+  let resourceExists;
   let collection = "colony";
   let query = { _id: new ObjectId(colonyId) };
 
@@ -80,23 +106,36 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
           try {
             console.log("Resources exist");
             let colony = await Database.findDocumentFromDatabase("colony", query);
-            colony.resource1;
-            colony.resource2;
-            colony.resource3;
+            let levelsArray = Object.entries(colony.buildings);
             let time = new Date().getTime();
             time = time - colony.time;
-            let resources = Resource.updateResources(colonyId, time);
-
+            levelsArray = [
+              levelsArray[0][1],
+              levelsArray[1][1],
+              levelsArray[2][1],
+            ];
+            currentResources = [
+              colony.resource1,
+              colony.resource2,
+              colony.resource3
+            ];
+            let resources = Resource.updateResources(time, levelsArray);
+            resources = [
+              currentResources[0] + resources[0],
+              currentResources[1] + resources[1],
+              currentResources[2] + resources[2]
+            ];
             colony = await Database.findAndUpdateFromDatabase(collection, query, 
             {
               $set: {
                 time: new Date().getTime(),
-                resource1: resources[0],   // TODO
+                resource1: resources[0],
                 resource2: resources[1],
                 resource3: resources[2],
                 buildings
               }
-            });    
+            });
+
             console.log("----------");
             console.log(colony);
             resolve(colony);
