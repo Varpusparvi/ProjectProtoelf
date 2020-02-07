@@ -229,7 +229,8 @@ const createUser = (username) => new Promise( async (resolve, reject) => {
 const isUserInDb = (username) => new Promise( async (resolve, reject) => {
   let query = {username: username};
   let collection = "player";
-  Database.findDocumentFromDatabase(collection,query).then((user) => {
+  try {    
+    let user = await Database.findDocumentFromDatabase(collection, query);
     if (user !== null) {
       resolve([user, true]);
       return;
@@ -237,9 +238,9 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
       resolve([null, false]);
       return;
     }
-  }).catch((err) => {
-    console.log(err);
-  })
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 
@@ -251,7 +252,8 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
 const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
   let query = { _id: new ObjectId(colonyId) };
   let collection = "colony";
-  Database.findDocumentFromDatabase(collection,query).then((colony) => {
+  try {
+    let colony = await Database.findDocumentFromDatabase(collection,query);
     if (colony !== null) {
       resolve([colony, true]);
       return;
@@ -259,9 +261,9 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
       resolve([null, false]);
       return;
     }
-  }).catch((err) => {
-    console.log(err);
-  })
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 
