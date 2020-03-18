@@ -1,9 +1,7 @@
 /* Module functions:
 - getResourceRate
-- getCostToNextLevel
 - getResourcesPerSecond
 - getResourcesDuringTime
-- chechCanUpgrade
 - updateResources
 */
 
@@ -63,26 +61,7 @@ export function getResourceRate(resource, colony_id) {
     return eq + eq*(bonus/100);
 }
 
-// Returns the mine cost for the next level as an array [resource 1, resource 2]
-export function getCostToNextLevel(resource, colony_id){
-    var level; //migi, find mine level from database using colony id (?)
-    var eq1;
-    var eq2;
-    if(resource === 1){
-        eq1 = eqCostToNextLevelMine1Res1(level);
-        eq2 = eqCostToNextLevelMine1Res2(level);
-    }
-    if(resource === 2){
-        eq1 = eqCostToNextLevelMine2Res1(level);
-        eq2 = eqCostToNextLevelMine2Res2(level);
-    }
-    if(resource === 3){
-        eq1 = eqCostToNextLevelMine3Res1(level);
-        eq2 = eqCostToNextLevelMine3Res2(level);
-    }
-    var arr = [eq1,eq2];
-    return arr;
-}
+
 
 // Returns the resource rate for spesific resource per second
 export function getResourcesPerSecond(resource, colony_id){
@@ -175,18 +154,7 @@ export function getResourcesDuringTime(resource, colony_id, time_from, time_to){
 
 // Checks if the colony has enough resources for the next mine level
 // Returns true or false
-export function checkCanUpgrade(resource, colony_id){
-    var arr = getCostToNextLevel(resource, colony_id);
-    var level; //migi, Tähän taas minen lvl databasesta
-    var r1; //migi, Tähän pelaajan resurssit databasesta
-    var r2;//migi, tähän sama toiselle resurssille
-    if(arr[0]>=r1 && arr[1]>=r2){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
+
 
 //export { getResourceRate, getCostToNextLevel, getResourcesPerSecond, getResourcesDuringTime, chechCanUpgrade };
 // This is a alternative for "export" in front of each function
