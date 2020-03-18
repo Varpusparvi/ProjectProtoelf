@@ -7,14 +7,14 @@
 
 // Resource generation equations
 const eqRateRes1Hour = (n) => {
-    return (Math.pow(n,2));
-}
-const eqRateRes2Hour = (n) => {
-    return (3*n);
-}
-const eqRateRes3Hour = (n) => {
-    return (15/n+(3/n));
-}
+    return (Math.pow(n,2)) * 1000;
+  }
+  const eqRateRes2Hour = (n) => {
+    return (3*n) * 1000;
+  }
+  const eqRateRes3Hour = (n) => {
+    return (15/n+(3/n)) * 1000;
+  }
 
 // Mine costs to the next level for each mine for each two resource
 const eqCostToNextLevelMine1Res1 = (c) => {
@@ -44,55 +44,44 @@ const eqCostToNextLevelMine3Res2 = (c) => {
 // Need resource, colony_id
 // await dbo.collection('colony').findOne(playerQuery)
 // Returns the resource rate for spesific resource per hour with possible resource generation bonus
-export function getResourceRate(resource, colony_id) {
-    let level = 1;
-    var n = level; //migi, find mine level from database using player/colony id (?)
-    var bonus = 0; //migi, find resource generation bonus from database using id
-    var eq;
+const getResourceRate = (resource, resLevel) => {
+    let bonus = 0; //migi, find resource generation bonus from database using id
+    let eq;
     if(resource === 1){
-        eq = eqRateRes1Hour(level);
+      eq = eqRateRes1Hour(resLevel);
     }
     if(resource === 2){
-        eq = eqRateRes2Hour(level);
+      eq = eqRateRes2Hour(resLevel);
     }
     if(resource === 3){
-        eq = eqRateRes3Hour(level);
+      eq = eqRateRes3Hour(resLevel);
     }
     return eq + eq*(bonus/100);
-}
+  }
 
 
 
 // Returns the resource rate for spesific resource per second
-export function getResourcesPerSecond(resource, colony_id){
-    return (getResourceRate(resource, colony_id)/3600);
-}
+export const getResourcesPerSecond = (resource, resLevel) => {
+    let resPerSec = getResourceRate(resource, resLevel)/3600;
+    return resPerSec;
+  }
 
 // migi, tutkis tää, voiko kirjottaa databaseen suoraan?
 // Updates the resources before server applys the consequences of the new event
 // Should be called every time action is being made/event happening
 //
 // Returns the amount of generated resources in spesific colony in certain time as an array [resource 1, resource 2, resource 3]
-export function updateResources(colony_id, time_ms){
-    // Setting up the mine levels and bonuses for resource generation
-    var level_res1; //migi, nää databasesta xd
-    var level_res2;
-    var level_res3;
-
-    return [(getResourcesPerSecond(1,colony_id)/1000)*time_ms, 
-            (getResourcesPerSecond(2,colony_id)/1000)*time_ms,
-            (getResourcesPerSecond(3,colony_id)/1000)*time_ms];
-
-    // Jos tää voi kirjottaa suoraan databaseen niiin:
-    /*
-    var res1 = getResourcesPerSecond(1,colony_id)/1000)*time_ms;
-    var res2 = getResourcesPerSecond(1,colony_id)/1000)*time_ms;
-    var res3 = getResourcesPerSecond(1,colony_id)/1000)*time_ms;
-
-    Tähän sitten miten ikinä sinne databaseen kirjotetaankaan :)
-
-    */
-}
+const updateResources = (time_ms, levelsArray) => {
+    let level_res1 = levelsArray[0];
+    let level_res2 = levelsArray[1];
+    let level_res3 = levelsArray[2];
+  
+    let res1 = getResourcesPerSecond(1, level_res1)*(time_ms/1000);
+    let res2 = getResourcesPerSecond(2, level_res2)*(time_ms/1000);
+    let res3 = getResourcesPerSecond(3, level_res3)*(time_ms/1000);
+    return [res1, res2, res3];
+  }
 
 // Ei tarvita mihinkään?
 // migi, HUOM kesken, ei varmuutta miten tulevat/menneet tapahtumat varastoitu databaseen, eli ei tähän toistaiseksi muutoksia

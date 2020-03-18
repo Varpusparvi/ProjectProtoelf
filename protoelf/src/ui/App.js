@@ -31,9 +31,9 @@ const App = () =>  {
 
   // Resource meter updater
   useInterval(() => {
-    setRes1(res1 + res1Rate);
-    setRes2(res2 + res2Rate);
-    setRes3(res3 + res3Rate);
+    setRes1(Math.round(res1 + res1Rate));
+    setRes2(Math.round(res2 + res2Rate));
+    setRes3(Math.round(res3 + res3Rate));
   },1000)
 
 
@@ -68,15 +68,16 @@ const App = () =>  {
    * @param {*} json colony info
    */
   const setResources = (json) => {
-    let buildingIndex0 = Object.keys(json.buildings)[0];
-    let buildingIndex1 = Object.keys(json.buildings)[1];
-    let buildingIndex2 = Object.keys(json.buildings)[2];
-    let _res1Rate = ResourceMining.getResourceRate(1,json.buildings[buildingIndex0]);  //
-    let _res2Rate = ResourceMining.getResourceRate(2,json.buildings[buildingIndex1]);
-    let _res3Rate = ResourceMining.getResourceRate(3,json.buildings[buildingIndex2]);
-    setRes1(json.resource1);
-    setRes2(json.resource2);
-    setRes3(json.resource3);
+    let keys = Object.keys(json.buildings);
+    let buildingIndex0 = keys[0];
+    let buildingIndex1 = keys[1];
+    let buildingIndex2 = keys[2];
+    let _res1Rate = ResourceMining.getResourcesPerSecond(1,json.buildings[buildingIndex0]);
+    let _res2Rate = ResourceMining.getResourcesPerSecond(2,json.buildings[buildingIndex1]);
+    let _res3Rate = ResourceMining.getResourcesPerSecond(3,json.buildings[buildingIndex2]);
+    setRes1(Math.round(json.resource1));
+    setRes2(Math.round(json.resource2));
+    setRes3(Math.round(json.resource3));
     setRes1Rate(_res1Rate);
     setRes2Rate(_res2Rate);
     setRes3Rate(_res3Rate);
