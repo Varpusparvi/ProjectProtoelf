@@ -25,9 +25,9 @@ function getResourcesPerSecondAll(level1,level2,level3){
     let a = parseInt(level1);
     let b = parseInt(level2);
     let c = parseInt(level3);
-    return [Bds.buildingEquations['Mine_res_1'].production_eq(a),
-            Bds.buildingEquations['Mine_res_2'].production_eq(b),
-            Bds.buildingEquations['Mine_res_3'].production_eq(c)];
+    return [Bds.buildingEquations[Bds.IdMine1].production_eq(a),
+            Bds.buildingEquations[Bds.IdMine2].production_eq(b),
+            Bds.buildingEquations[Bds.IdMine3].production_eq(c)];
 };
 
 /**

@@ -7,7 +7,9 @@
     - getResourceProduction
 */
 
-
+const IdMine1 = "Mine_res_1";
+const IdMine2 = "Mine_res_2";
+const IdMine3 = "Mine_res_3";
 // MIGI mp tästä
 // "Mine_res_1" equals ID of the building
 const buildingEquations = {
@@ -80,5 +82,8 @@ module.exports = {
     buildingEquations,
     getBuildingUpgradeCost,
     getResourceProduction,
-    getTimeConsumptionOnBuildingUpgrade
+    getTimeConsumptionOnBuildingUpgrade,
+    IdMine1,
+    IdMine2,
+    IdMine3
 };
