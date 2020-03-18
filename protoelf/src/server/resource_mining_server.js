@@ -69,13 +69,15 @@ function getCostToNextLevel(resource, colony_id){
 }
 
 
-// Bonus is in format 20% which means 120%
-// Need resource, colony_id
-// await dbo.collection('colony').findOne(playerQuery)
-// Returns the resource rate for spesific resource per hour with possible resource generation bonus
-const getResourceRate = (resource, resLevel) => {
-  let bonus = 0; //migi, find resource generation bonus from database using id
+/**
+ * 
+ * @param {*} resource Type of resource 1, 2 , 3
+ * @param {*} resLevel Corresponding level of the resource mine
+ * @param {*} bonus Resource production bonus as 1.6 = 160% for corresponding resource
+ */
+const getResourceRate = (resource, resLevel, bonus=0) => {
   let eq;
+  let bonus = bonus;
   if(resource === 1){
     eq = eqRateRes1Hour(resLevel);
   }
@@ -85,29 +87,32 @@ const getResourceRate = (resource, resLevel) => {
   if(resource === 3){
     eq = eqRateRes3Hour(resLevel);
   }
-  return eq + eq*(bonus/100);
+  return eq + eq*bonus;
 }
 
 
-const getResourcesPerSecond = (resource, resLevel) => {
-  let resPerSec = getResourceRate(resource, resLevel)/3600;
-  return resPerSec;
-}
-
-
-// migi, tutkis tää, voiko kirjottaa databaseen suoraan?
-// Updates the resources before server applys the consequences of the new event
-// Should be called every time action is being made/event happening
-//
-// Returns the amount of generated resources in spesific colony in certain time as an array [resource 1, resource 2, resource 3]
-const updateResources = (time_ms, levelsArray) => {
+/**
+ * 
+ * @param {*} time_ms Time elapsed between Time.now and lastChecked time
+ * @param {*} levelsArray Mines' levels as an array 
+ * @param {*} r1_bonus Bonus generation for res1
+ * @param {*} r2_bonus Bonus generation for res2
+ * @param {*} r3_bonus Bonus generation for res3
+ * @returns Generated resources as an array
+ */
+const updateResources = (time_ms, levelsArray, r1_bonus=0, r2_bonus=0, r3_bonus=0) => {
   let level_res1 = levelsArray[0];
   let level_res2 = levelsArray[1];
   let level_res3 = levelsArray[2];
-
-  let res1 = getResourcesPerSecond(1, level_res1)*(time_ms/1000);
-  let res2 = getResourcesPerSecond(2, level_res2)*(time_ms/1000);
-  let res3 = getResourcesPerSecond(3, level_res3)*(time_ms/1000);
+  let r1_bonus = r1b;
+  let r2_bonus = r2b;
+  let r3_bonus = r3b;
+  let res1 = eqRateRes1Hour(level_res1)/3600*(time_ms/1000);
+  let res2 = eqRateRes2Hour(level_res2)/3600*(time_ms/1000);
+  let res3 = eqRateRes3Hour(level_res3)/3600*(time_ms/1000);
+  res1 = res1 + res1*r1b;
+  res2 = res2 + res2*r2b;
+  res3 = res3 + res3*r3b;
   return [res1, res2, res3];
 }
 

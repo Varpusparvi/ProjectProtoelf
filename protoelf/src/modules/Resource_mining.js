@@ -5,41 +5,6 @@
 - updateResources
 */
 
-// Resource generation equations
-const eqRateRes1Hour = (n) => {
-    return (Math.pow(n,2)) * 1000;
-  }
-  const eqRateRes2Hour = (n) => {
-    return (3*n) * 1000;
-  }
-  const eqRateRes3Hour = (n) => {
-    return (15/n+(3/n)) * 1000;
-  }
-
-// Mine costs to the next level for each mine for each two resource
-const eqCostToNextLevelMine1Res1 = (c) => {
-    return (20*c+(Math.pow(1.3,c)));
-}
-const eqCostToNextLevelMine1Res2 = (c) => {
-    return (10*c+(Math.pow(1.1,c)));
-}
-
-const eqCostToNextLevelMine2Res1 = (c) => {
-    return (120*c+(Math.pow(1.4,c)));
-}
-const eqCostToNextLevelMine2Res2 = (c) => {
-    return (50*c+(Math.pow(1.2,c)));
-}
-
-const eqCostToNextLevelMine3Res1 = (c) => {
-    return (200*c+(Math.pow(1.7,c)));
-}
-const eqCostToNextLevelMine3Res2 = (c) => {
-    return (185*c+(Math.pow(1.4,c)));
-}
-
-
-
 // Bonus is in format 20% which means 120%
 // Need resource, colony_id
 // await dbo.collection('colony').findOne(playerQuery)
