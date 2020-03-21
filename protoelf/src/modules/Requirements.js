@@ -6,7 +6,7 @@ import * as G from './GroundForces.js';
 function getRequirements(id, type){
 
     let reqObj;
-    let id = toString(id);
+    let idd = toString(id);
     switch(type){
         case "building":
             reqObj = Bds.buildingEquations;
@@ -20,7 +20,7 @@ function getRequirements(id, type){
         default:
             return "Error with type-parameter";
     }
-    if(reqObj[id].requirements === undefined){
+    if(reqObj[idd].requirements === undefined){
         return [];
     }else{
         var data = [];

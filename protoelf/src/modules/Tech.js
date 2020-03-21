@@ -1,4 +1,4 @@
-const techEquations = {
+export const techEquations = {
     "tech1" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
@@ -24,4 +24,3 @@ const techEquations = {
 };
 
 
-export const { techEquations };

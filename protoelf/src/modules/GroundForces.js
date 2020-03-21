@@ -1,4 +1,4 @@
-const gForceEquations = {
+export const gForceEquations = {
     "Military1" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
@@ -35,9 +35,4 @@ const gForceEquations = {
         "type" : "flying",
         "position" : 1
     }
-};
-
-
-module.exports = {
-    gForceEquations
 };

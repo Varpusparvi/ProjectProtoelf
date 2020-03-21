@@ -7,12 +7,12 @@
     - getResourceProduction
 */
 
-const IdMine1 = "Mine_res_1";
-const IdMine2 = "Mine_res_2";
-const IdMine3 = "Mine_res_3";
+export const IdMine1 = "Mine_res_1";
+export const IdMine2 = "Mine_res_2";
+export const IdMine3 = "Mine_res_3";
 // MIGI mp tästä
 // "Mine_res_1" equals ID of the building
-const buildingEquations = {
+export const buildingEquations = {
     "Mine_res_1" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
@@ -59,7 +59,7 @@ const buildingEquations = {
  * @param {*} building_level Level of the building
  * @returns Array which contains required resources for upgrade [r1,r2,r3]
  */
-function getBuildingUpgradeCost(building_id, building_level){
+export function getBuildingUpgradeCost(building_id, building_level){
     let c = parseInt(building_level);
     let r1 = buildingEquations[building_id].cost_eq.res1(c);
     let r2 = buildingEquations[building_id].cost_eq.res2(c);
@@ -73,7 +73,7 @@ function getBuildingUpgradeCost(building_id, building_level){
  * @param {*} building_level Level of the building
  * @returns Upgrade time in seconds, from start to finish
  */
-function getTimeConsumptionOnBuildingUpgrade(building_id, building_level){
+export function getTimeConsumptionOnBuildingUpgrade(building_id, building_level){
     let c = parseInt(building_level);
     return buildingEquations[building_id].time_eq(c);
 };
@@ -84,17 +84,7 @@ function getTimeConsumptionOnBuildingUpgrade(building_id, building_level){
  * @param {*} building_level Level of the building
  * @returns Production of the building (A mine)
  */
-function getResourceProduction(building_id, building_level){
+export function getResourceProduction(building_id, building_level){
     let c = parseInt(building_level);
     return buildingEquations[building_id].production_eq(c);
-};
-
-module.exports = {
-    buildingEquations,
-    getBuildingUpgradeCost,
-    getResourceProduction,
-    getTimeConsumptionOnBuildingUpgrade,
-    IdMine1,
-    IdMine2,
-    IdMine3
 };
