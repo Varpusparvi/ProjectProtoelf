@@ -38,7 +38,7 @@ export const buildingEquations = {
             "res3" : function(n){return 3*n;}
         },
         "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return 4*n;}
+        "production_eq" : function(n){return 5*n;}
     },
     "shipyard" : {
         "cost_eq" : {
@@ -48,7 +48,8 @@ export const buildingEquations = {
         },
         "time_eq" : function(n){return 3*n;},
         "requirements" : {
-            "tech2" : 1
+            "tech2" : 1,
+            "tech3" : 2
         }
     }
 };
@@ -78,13 +79,3 @@ export function getTimeConsumptionOnBuildingUpgrade(building_id, building_level)
     return buildingEquations[building_id].time_eq(c);
 };
 
-/**
- * 
- * @param {*} building_id ID of the building
- * @param {*} building_level Level of the building
- * @returns Production of the building (A mine)
- */
-export function getResourceProduction(building_id, building_level){
-    let c = parseInt(building_level);
-    return buildingEquations[building_id].production_eq(c);
-};
