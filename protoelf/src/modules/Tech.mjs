@@ -1,6 +1,5 @@
-
-const TechEquations = {
-    "Tech1" : {
+const techEquations = {
+    "tech1" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
             "res2" : function(n){return 2*n;},
@@ -8,10 +7,10 @@ const TechEquations = {
         },
         "time_eq" : function(n){return 3*n;},
         "requirements" : {
-            "Tech2" : 3
+            "tech2" : 3
         }
     },
-    "Tech2" : {
+    "tech2" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
             "res2" : function(n){return 2*n;},
@@ -25,7 +24,4 @@ const TechEquations = {
 };
 
 
-
-module.exports = {
-    TechEquations
-};
+export const { techEquations };

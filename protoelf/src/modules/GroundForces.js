@@ -1,8 +1,4 @@
-
-
-
-
-const GForceEquations = {
+const gForceEquations = {
     "Military1" : {
         "cost_eq" : {
             "res1" : function(n){return 1*n;},
@@ -43,5 +39,5 @@ const GForceEquations = {
 
 
 module.exports = {
-    GForceEquations
+    gForceEquations
 };

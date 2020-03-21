@@ -1,4 +1,4 @@
-const Bds = require('./Buildings.js');
+import * as Bds from './Buildings.js';
 /* Module functions:
 
 */
@@ -42,6 +42,7 @@ function getResourcesPerSecondAll(level1,level2,level3){
  */
 function updateResourcesFromProduction(level1, level2, level3, from, to){
     let resource_rate_arr = getResourcesPerSecondAll(level1,level2,level3);
+    // To seconds
     let time_difference_seconds = (to-from)/1000;
     for(let i = 0; i<resource_rate_arr.length;i++){
         resource_rate_arr[i] = resource_rate_arr[i]*time_difference_seconds;
