@@ -1,7 +1,19 @@
-const Resource = require('./resource_mining_server.js');
+/*
+const Resource = require('../modules/Mines.js');
 const Database = require('./db_functions.js');
 const DB = require('./db.js');
 let ObjectId = require('mongodb').ObjectID;
+*/
+
+import * as Resource from '../modules/Mines.js';
+import * as Database from './db_functions.js';
+import * as DB from './db.js';
+import { default as Mongodb } from 'mongodb';
+let ObjectId = Mongodb.ObjectID;
+
+
+/*
+*/
 
 
 /**
@@ -11,7 +23,7 @@ let ObjectId = require('mongodb').ObjectID;
  * @param {*} username username
  * @returns user
  */
-const login = (username) => new Promise(async (resolve, reject) => {
+export const login = (username) => new Promise(async (resolve, reject) => {
   let userQuery = { username: username };
   // Try to find user from database
   try {
@@ -71,7 +83,7 @@ const login = (username) => new Promise(async (resolve, reject) => {
  * @param {*} username 
  * @returns upgraded or unupgraded colony
  */
-const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
+export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
   let userExists;
   let colonyExists;
   let upgradeExists;
@@ -163,7 +175,7 @@ const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( as
  * @param {*} username username to create account with
  * @returns array [user, colony]
  */
-const createUser = (username) => new Promise( async (resolve, reject) => {
+export const createUser = (username) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   // Create colony for the user
@@ -226,7 +238,7 @@ const createUser = (username) => new Promise( async (resolve, reject) => {
  * @param {*} username 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
-const isUserInDb = (username) => new Promise( async (resolve, reject) => {
+export const isUserInDb = (username) => new Promise( async (resolve, reject) => {
   let query = {username: username};
   let collection = "player";
   try {    
@@ -249,7 +261,7 @@ const isUserInDb = (username) => new Promise( async (resolve, reject) => {
  * @param {*} colonyId 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
-const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
+export const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
   let query = { _id: new ObjectId(colonyId) };
   let collection = "colony";
   try {
@@ -272,7 +284,7 @@ const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) => {
  * @param {*} upgradeId 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
-const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
+export const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
   let query = { _id: new ObjectId(upgradeId) };
   let collection1 = "buildings";
   let collection2 = "tech";
@@ -305,7 +317,7 @@ const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
  * @param {*} upgradeId 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
-const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
+export const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
   /*
   let upgradeQuery = { _id: new ObjectId(upgradeId) };
   let colonyQuery = { _id: new ObjectId(colonyId) };
@@ -317,7 +329,7 @@ const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( as
   return;
 })
 
-
+/*
 module.exports = {
   login,
   upgrade,
@@ -326,3 +338,4 @@ module.exports = {
   isUpgradeInDb,
   isEnoughResources,
 }
+*/

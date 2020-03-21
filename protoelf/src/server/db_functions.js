@@ -1,5 +1,9 @@
+/*
 const DB = require('./db.js');
 let ObjectId = require('mongodb').ObjectID;
+*/
+import * as DB from './db.js';
+import ObjectId from 'mongodb';
 
 
 
@@ -9,7 +13,7 @@ let ObjectId = require('mongodb').ObjectID;
  * @param {*} query Query used to find target document
  * @returns Single matching document
  */
-const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
+export const findDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   let result;
@@ -34,7 +38,7 @@ const findDocumentFromDatabase = (collection, query) => new Promise( async (reso
  * @returns Updated document
  * https://docs.mongodb.com/manual/reference/operator/update/#id1
  */
-const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Promise( async (resolve, reject) => {
+export const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   let result;
@@ -58,7 +62,7 @@ const findAndUpdateFromDatabase = (collection, query, updatedDocument) => new Pr
  * @param {*} document Document which to insert. JSON.
  * @returns Generated _id of the document
  */
-const insertDocumentIntoDatabase = (collection, document) => new Promise( async (resolve, reject) => {
+export const insertDocumentIntoDatabase = (collection, document) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   let _id;
@@ -83,7 +87,7 @@ const insertDocumentIntoDatabase = (collection, document) => new Promise( async 
  * @param {*} query Query used to find target document
  * @returns ????
  */
-const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
+export const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   let deleted;
@@ -103,7 +107,7 @@ const removeDocumentFromDatabase = (collection, query) => new Promise( async () 
  * buildings are defined in server_functions.js
  * @returns array of ids of buildings
  */
-const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
+export const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   const collection = "buildings";
@@ -185,7 +189,7 @@ const BUILDINGS = [
   tradingPost
 ]
 
-
+/*
 module.exports= {
   findDocumentFromDatabase,
   findAndUpdateFromDatabase,
@@ -193,3 +197,4 @@ module.exports= {
   removeDocumentFromDatabase,
   addBuildingsToDb
 }
+*/
