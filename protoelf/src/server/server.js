@@ -1,8 +1,14 @@
-"use strict";
+/*
 const DB = require('./db.js');
 const ServerHelper = require('./server_functions.js');
 const Database = require('./db_functions.js');
 const express = require('express')
+*/
+import * as ServerHelper from './server_functions.js';
+import * as Database from './db_functions.js';
+import * as DB from './db.js';
+import express from 'express';
+
 const app = express()
 const port = process.env.PORT || 8080;
 

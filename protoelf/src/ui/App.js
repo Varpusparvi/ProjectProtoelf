@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect, useRef} from 'react';
 import MainContainer from './MainContainer';
-import * as ResourceMining from '../modules/resource_mining.js';
+import * as ResourceMining from '../modules/Mines.js';
 
 var serverUrl = 'http://localhost:8080/';
 
