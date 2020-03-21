@@ -20,7 +20,7 @@ export const buildingEquations = {
             "res3" : function(n){return 3*n;}
         },
         "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return (3*n*0.555).toFixed(5);}
+        "production_eq" : function(n){return Math.round((3*n*0.555));}
     },
     "Mine_res_2" : {
         "cost_eq" : {
@@ -29,7 +29,7 @@ export const buildingEquations = {
             "res3" : function(n){return 3*n;}
         },
         "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return 4*n;}
+        "production_eq" : function(n){ return Math.round(4*n);}
     },
     "Mine_res_3" : {
         "cost_eq" : {
@@ -38,7 +38,7 @@ export const buildingEquations = {
             "res3" : function(n){return 3*n;}
         },
         "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return 4*n;}
+        "production_eq" : function(n){return Math.round(2*n);}
     },
     "shipyard" : {
         "cost_eq" : {

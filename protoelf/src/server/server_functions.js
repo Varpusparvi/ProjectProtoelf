@@ -12,9 +12,6 @@ import { default as Mongodb } from 'mongodb';
 let ObjectId = Mongodb.ObjectID;
 
 
-/*
-*/
-
 
 /**
  * Check if the user is in database.
@@ -35,23 +32,24 @@ export const login = (username) => new Promise(async (resolve, reject) => {
       let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
       let levelsArray = Object.entries(colony.buildings);
       let time = new Date().getTime();
-      time = time - colony.time;
       levelsArray = [
         levelsArray[0][1],
         levelsArray[1][1],
         levelsArray[2][1],
       ];
-      currentResources = [
+      let currentResources = [
         colony.resource1,
         colony.resource2,
         colony.resource3
       ];
-      let resources = Resource.updateResources(time, levelsArray);
+      let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], levelsArray[2], colony.time, time);
+      console.log(resources, "server_functions: 47");
       resources = [
         currentResources[0] + resources[0],
         currentResources[1] + resources[1],
         currentResources[2] + resources[2]
       ];
+      console.log(resources, "server_functions: 53");
       colony = await Database.findAndUpdateFromDatabase("colony", colonyQuery, 
       {
         $set: {
@@ -120,18 +118,17 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
             let colony = await Database.findDocumentFromDatabase("colony", query);
             let levelsArray = Object.entries(colony.buildings);
             let time = new Date().getTime();
-            time = time - colony.time;
             levelsArray = [
               levelsArray[0][1],
               levelsArray[1][1],
               levelsArray[2][1],
             ];
-            currentResources = [
+            let currentResources = [
               colony.resource1,
               colony.resource2,
               colony.resource3
             ];
-            let resources = Resource.updateResources(time, levelsArray);
+            let resources = Resource.updateResourcesFromProduction(levelsArray[0][1], levelsArray[1][1], levelsArray[2][1], colony.time, time);
             resources = [
               currentResources[0] + resources[0],
               currentResources[1] + resources[1],

@@ -68,13 +68,17 @@ const App = () =>  {
    * @param {*} json colony info
    */
   const setResources = (json) => {
+    console.log(json);
     let keys = Object.keys(json.buildings);
     let buildingIndex0 = keys[0];
     let buildingIndex1 = keys[1];
     let buildingIndex2 = keys[2];
-    let _res1Rate = ResourceMining.getResourcesPerSecond(1,json.buildings[buildingIndex0]);
-    let _res2Rate = ResourceMining.getResourcesPerSecond(2,json.buildings[buildingIndex1]);
-    let _res3Rate = ResourceMining.getResourcesPerSecond(3,json.buildings[buildingIndex2]);
+    let _res1Rate = ResourceMining.getResourcesPerSecond("Mine_res_1",json.buildings[buildingIndex0]);
+    let _res2Rate = ResourceMining.getResourcesPerSecond("Mine_res_2",json.buildings[buildingIndex1]);
+    let _res3Rate = ResourceMining.getResourcesPerSecond("Mine_res_3",json.buildings[buildingIndex2]);
+    console.log(_res1Rate);
+    console.log(_res2Rate);
+    console.log(_res3Rate);
     setRes1(Math.round(json.resource1));
     setRes2(Math.round(json.resource2));
     setRes3(Math.round(json.resource3));
@@ -87,13 +91,12 @@ const App = () =>  {
   /**
    * Handles login and registering
    * @param {*} e value of input field
-   */
+  */
   const loginHandler = async (e) => {
     if (e.keyCode === 13) {
       var username = e.target.value;
 
       let json = await createOrFetchPlayer(username);
-      console.log(json[1].buildings);
       if (json === null || json === undefined) {
         return;
       }

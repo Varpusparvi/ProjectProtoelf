@@ -23,9 +23,9 @@ export function getResourcesPerSecond(building_id, building_level){
  * @returns Array of three with the resource production rate per second [r1,r2,r3]
  */
 export function getResourcesPerSecondAll(level1,level2,level3){
-    let a = parseInt(level1);
-    let b = parseInt(level2);
-    let c = parseInt(level3);
+    let a = level1;
+    let b = level2;
+    let c = level3;
     return [Bds.buildingEquations[Bds.IdMine1].production_eq(a),
             Bds.buildingEquations[Bds.IdMine2].production_eq(b),
             Bds.buildingEquations[Bds.IdMine3].production_eq(c)];
@@ -42,6 +42,7 @@ export function getResourcesPerSecondAll(level1,level2,level3){
  * @returns Array of three with the amount of each resource generated from time period [r1,r2,r3]
  */
 export function updateResourcesFromProduction(level1, level2, level3, from, to){
+    console.log(level1, level2, level3, "updateResourcesFromProduction");
     let resource_rate_arr = getResourcesPerSecondAll(level1,level2,level3);
     // To seconds
     let time_difference_seconds = (to-from)/1000;
