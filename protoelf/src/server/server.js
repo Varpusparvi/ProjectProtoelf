@@ -6,8 +6,8 @@ import bodyParser from 'body-parser';
 
 import { loginRoute } from './routing/login.js';
 import { buildingRoute } from './routing/building.js';
-//import techRoute from './routing/tech.js';
-//import fleetRoute from './routing/fleet.js';
+//import { techRoute } from './routing/tech.js';
+//import { fleetRoute } from './routing/fleet.js';
 
 const app = express();
 const port = process.env.PORT || 8080;

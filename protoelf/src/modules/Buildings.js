@@ -38,7 +38,7 @@ export const buildingEquations = {
             "res3" : function(n){return 3*n;}
         },
         "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return Math.round(2*n);}
+        "production_eq" : function(n){ return Math.round(2*n);}
     },
     "shipyard" : {
         "cost_eq" : {

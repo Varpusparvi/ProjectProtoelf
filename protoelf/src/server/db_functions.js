@@ -140,44 +140,77 @@ export const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
 
 let resGen1 = {
   name: "Resource 1 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  production_eq : function(n){return Math.round((3*n*0.555));}
 }
 
 let resGen2 = {
   name: "Resource 2 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  production_eq : function(n){return Math.round(4*n);}
 }
 
 let resGen3 = {
   name: "Resource 3 generator",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  production_eq : function(n){return Math.round(2*n);}
 }
 
 let starport = {
   name: "Starport",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  requirements : {
+    tech2 : 1,
+    tech3 : 2
+}
 }
 
 let barracks = {
   name: "Barracks",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  requirements : {
+    tech2 : 1,
+    tech3 : 2
+}
 }
 
 let tradingPost = {
   name: "Trading post",
-  priceResource1: 1,
-  priceResource2: 3,
-  priceResource3: 18
+  cost_eq : {
+    res1 : function(n){return 1*n;},
+    res2 : function(n){return 2*n;},
+    res3 : function(n){return 3*n;}
+  },
+  time_eq : function(n){return 3*n;},
+  requirements : {
+    tech2 : 1,
+    tech3 : 2
+}
 }
 
 const BUILDINGS = [
