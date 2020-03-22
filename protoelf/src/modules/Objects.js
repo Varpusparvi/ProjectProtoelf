@@ -1,4 +1,8 @@
 
+export const IdMine1 = "Mine_res_1";
+export const IdMine2 = "Mine_res_2";
+export const IdMine3 = "Mine_res_3";
+
 export const buildingEquations = {
     "Mine_res_1" : {
         "cost_eq" : {

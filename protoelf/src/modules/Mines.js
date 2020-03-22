@@ -44,7 +44,6 @@ export function getResourcesPerSecondAll(level1,level2,level3){
  * @returns Array of three with the amount of each resource generated from time period [r1,r2,r3]
  */
 export function updateResourcesFromProduction(level1, level2, level3, from, to){
-    console.log(level1, level2, level3, "updateResourcesFromProduction");
     let resource_rate_arr = getResourcesPerSecondAll(level1,level2,level3);
     // To seconds
     let time_difference_seconds = (to-from)/1000;
