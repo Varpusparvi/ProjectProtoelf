@@ -1,15 +1,9 @@
-/*
-const Resource = require('../modules/Mines.js');
-const Database = require('./db_functions.js');
-const DB = require('./db.js');
-let ObjectId = require('mongodb').ObjectID;
-*/
-
 import * as Resource from '../modules/Mines.js';
+import * as Upgrades from '../modules/Buildings.js'
 import * as Database from './db_functions.js';
 import * as DB from './db.js';
 import { default as Mongodb } from 'mongodb';
-let ObjectId = Mongodb.ObjectID;
+let ObjectId = Mongodb.ObjectId;
 
 
 
@@ -22,16 +16,20 @@ let ObjectId = Mongodb.ObjectID;
  */
 export const login = (username) => new Promise(async (resolve, reject) => {
   let userQuery = { username: username };
-  // Try to find user from database
+
   try {
+    // Try to find user from database
     let user = await Database.findDocumentFromDatabase("player", userQuery);
     if (user !== undefined && user !== null) {
       let colonyId = user.colonies[0];
       let colonyQuery = { _id: new ObjectId(colonyId) };
 
+      // Try to find user's first colony from database
       let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
       let levelsArray = Object.entries(colony.buildings);
       let time = new Date().getTime();
+
+      // Mine levels for r1,r2,r3
       levelsArray = [
         levelsArray[0][1],
         levelsArray[1][1],
@@ -42,14 +40,19 @@ export const login = (username) => new Promise(async (resolve, reject) => {
         colony.resource2,
         colony.resource3
       ];
-      let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], levelsArray[2], colony.time, time);
-      console.log(resources, "server_functions: 47");
+
+      // Update resources in the colony to be up to date
+      let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1],
+                                                          levelsArray[2], colony.time, time);
+      // Updated resource count
       resources = [
         currentResources[0] + resources[0],
         currentResources[1] + resources[1],
         currentResources[2] + resources[2]
       ];
-      console.log(resources, "server_functions: 53");
+      console.log("server_functions: 52",resources);
+
+      // Set updated resources into database in the same colony, update time modified
       colony = await Database.findAndUpdateFromDatabase("colony", colonyQuery, 
       {
         $set: {
@@ -59,6 +62,8 @@ export const login = (username) => new Promise(async (resolve, reject) => {
           resource3: resources[2],
         }
       });
+      
+      // Return user and colony to the calling function
       resolve([user, colony]);
       return;
     } else {
@@ -73,6 +78,44 @@ export const login = (username) => new Promise(async (resolve, reject) => {
 })
 
 
+
+/**
+ * Checks if upgrade is allowed
+ * @param {*} upgradeId 
+ * @param {*} upgradeLevel 
+ * @param {*} colonyId 
+ * @param {*} username 
+ * @returns [true, array of buildings] or [false, null]
+ */
+const isUpgradeAllowed = (upgradeId, upgradeLevel, colonyId, username) => new Promise(async (resolve, reject) => {
+  // Get information of if requirements for upgrade are met
+  try {
+    let userExists = await isUserInDb(username);
+    let colonyExists = await isColonyInDb(colonyId);
+    let upgradeExists = await isUpgradeInDb(upgradeId);
+    //let resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+    let buildings = colonyExists[0].buildings;
+
+    // TODO check for if the player owns the colony
+    // If allowed return array of [true, array of buildings]
+    if (userExists[1]) {
+      if (colonyExists[1]) {
+        if (upgradeExists[1]) {
+          //if (resourceExists[1]) {
+            resolve([true, buildings]);
+          //}
+        }
+      }
+    } else { // else [false, null]
+      resolve([false, null]);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+})
+
+
+
 /**
  * Upgrades selected entity in selected colony for user
  * @param {*} upgradeId 
@@ -82,89 +125,77 @@ export const login = (username) => new Promise(async (resolve, reject) => {
  * @returns upgraded or unupgraded colony
  */
 export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Promise( async (resolve, reject) => {
-  let userExists;
-  let colonyExists;
-  let upgradeExists;
-  let resourceExists;
   let collection = "colony";
-  let query = { _id: new ObjectId(colonyId) };
+  let colonyQuery = { _id: new ObjectId(colonyId) };
 
-  try {
-    userExists = await isUserInDb(username);
-    colonyExists = await isColonyInDb(colonyId);
-    upgradeExists = await isUpgradeInDb(upgradeId);
-    resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
-  } catch (error) {
-    console.log(error);
-  }
+  // Check if upgrading is allowed
+  let check = await isUpgradeAllowed(upgradeId, upgradeLevel, colonyId, username);
+  if (check[0]) {
+    // Set updated level
+    check[1][upgradeId] = upgradeLevel; 
+    let buildings = check[1];
+    try {
+      // Find colony from database
+      let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
+      let levelsArray = Object.entries(colony.buildings);
+      let time = new Date().getTime();
 
-  // TODO Correct the fields
-  let array = colonyExists[0].buildings;
-  let buildings = array;
-  buildings[upgradeId] = upgradeLevel;
+      // Mine levels for updated resource count
+      levelsArray = [
+        levelsArray[0][1],
+        levelsArray[1][1],
+        levelsArray[2][1],
+      ];
+      let currentResources = [
+        colony.resource1,
+        colony.resource2,
+        colony.resource3
+      ];
 
-  console.log(upgrade);
-  // TODO check for if the player owns the colony
-  // TODO check for if the upgrade is possible
-  if (userExists[1]) {
-    console.log("User exists");
-    if (colonyExists[1]) {
-      console.log("Colony exists");
-      if (upgradeExists[1]) {
-        console.log("Upgrade exists");
-        if (resourceExists) {
-          try {
-            console.log("Resources exist");
-            let colony = await Database.findDocumentFromDatabase("colony", query);
-            let levelsArray = Object.entries(colony.buildings);
-            let time = new Date().getTime();
-            levelsArray = [
-              levelsArray[0][1],
-              levelsArray[1][1],
-              levelsArray[2][1],
-            ];
-            let currentResources = [
-              colony.resource1,
-              colony.resource2,
-              colony.resource3
-            ];
-            let resources = Resource.updateResourcesFromProduction(levelsArray[0][1], levelsArray[1][1], levelsArray[2][1], colony.time, time);
-            resources = [
-              currentResources[0] + resources[0],
-              currentResources[1] + resources[1],
-              currentResources[2] + resources[2]
-            ];
-            colony = await Database.findAndUpdateFromDatabase(collection, query, 
-            {
-              $set: {
-                time: new Date().getTime(),
-                resource1: resources[0],
-                resource2: resources[1],
-                resource3: resources[2],
-                buildings
-              }
-            });
+      // Update resources to be up to date before trying to upgrade
+      let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], levelsArray[2], colony.time, time);
+      resources = [
+        currentResources[0] + resources[0],
+        currentResources[1] + resources[1],
+        currentResources[2] + resources[2]
+      ];
+      console.log("server_functions: 146",resources);
 
-            console.log("----------");
-            console.log(colony);
-            resolve(colony);
-            return;
-          } catch (error) {
-            console.log(error);
-          }
+      // Upgrade costs resources
+      // let resourceCosts = Upgrades.getBuildingUpgradeCost();
+      let resourceCosts = [1000, 1000, 1000];
+      resources = [
+        resources[0] - resourceCosts[0],
+        resources[1] - resourceCosts[1],
+        resources[2] - resourceCosts[2]
+      ]
+
+      // Set new resource amounts in colony in db, update time modified,
+      // add level to building
+      colony = await Database.findAndUpdateFromDatabase(collection, colonyQuery, 
+      {
+        $set: {
+          time: new Date().getTime(),
+          resource1: resources[0],
+          resource2: resources[1],
+          resource3: resources[2],
+          buildings
         }
-        resolve("Not enough resources");
-        return;
-      }
-      resolve("Upgrade doesn't exist");
+      });
+      console.log("----------");
+      console.log(colony);
+
+      // Return new colony information to the calling function
+      resolve(colony);
       return;
+    } catch (error) {
+      console.log(error);
     }
-    resolve("Colony doesn't exist");
-    return;
+  } else {
+    console.log("Upgrade not allowed!");
   }
-  resolve("User doesn't exist");
-  return;
 })
+
 
 
 /**
@@ -185,6 +216,7 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
     return;
   }
   
+  // Colony with no resources or buildings, time created
   let colony = {
     resource1: 0,
     resource2: 0,
@@ -193,7 +225,7 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
     time: new Date().getTime()
   }
 
-  // set levels for buildings
+  // set levels for buildings (mines lvl 1)
   for (let i = 0; i < buildingIds.length; i++) {
     if (i < 3) { // while building is resource building ie. first 3 buildings
       let id = buildingIds[i]._id;
@@ -205,6 +237,8 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
   }
 
   // Create user to be saved
+  // TODO saving password
+  // authentication?
   let user = {
     username: username,
     password: "hash",
@@ -216,12 +250,13 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
   db.collection("colony").insertOne(colony, (err) => {
     if (err) return;
     console.log(colony);
-    user.colonies.push(colony._id);
+    user.colonies.push(colony._id); // ID from db after operation
 
     // Insert user into db
     db.collection("player").insertOne(user, (err) => {
       if (err) return;
       console.log(user);
+      // Return user and colony info for calling function
       resolve([user, colony]);
       return;
     })
@@ -253,6 +288,7 @@ export const isUserInDb = (username) => new Promise( async (resolve, reject) => 
 })
 
 
+
 /**
  * Gets the document with given colonyId
  * @param {*} colonyId 
@@ -276,6 +312,7 @@ export const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) =
 })
 
 
+
 /**
  * Gets the document with given upgradeId
  * @param {*} upgradeId 
@@ -287,9 +324,12 @@ export const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject)
   let collection2 = "tech";
 
   try {
-    let document = await Database.findDocumentFromDatabase(collection1, query); // is in building db?
+    // TODO Change db structure?
+    // is in building db?
+    let document = await Database.findDocumentFromDatabase(collection1, query); 
     if (document === null) {
-      document = await Database.findDocumentFromDatabase(collection2, query);  // is in tech db?
+      // is in tech db?
+      document = await Database.findDocumentFromDatabase(collection2, query);  
       if (document === null) {
         resolve([null, false]);
         return;
@@ -309,30 +349,20 @@ export const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject)
 })
 
 
+
 /**
  * Gets the document with given upgradeId
  * @param {*} upgradeId 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
 export const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
-  /*
   let upgradeQuery = { _id: new ObjectId(upgradeId) };
   let colonyQuery = { _id: new ObjectId(colonyId) };
   let upgradeCollection = "upgrade";
   let colonyCollection = "colony";
+  /*
   */
   // TODO
   resolve(true);
   return;
 })
-
-/*
-module.exports = {
-  login,
-  upgrade,
-  isUserInDb,
-  isColonyInDb,
-  isUpgradeInDb,
-  isEnoughResources,
-}
-*/

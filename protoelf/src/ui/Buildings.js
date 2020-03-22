@@ -28,7 +28,6 @@ const Buildings = ({upgrade, buildings, currentColony}) =>  {
     <div className="buildingGrid">
       {buildings.map((building) => {
         let level = combineData(building);
-        console.log("render")
         return (
           <div key={building._id} value={building._id} className="building" onClick={() => handleClick(building._id)}>
             <div className="building_img">
