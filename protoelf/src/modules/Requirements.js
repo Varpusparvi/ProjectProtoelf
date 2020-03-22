@@ -1,7 +1,4 @@
-import * as Bds from './Buildings.js';
-import * as T from './Tech.js';
-import * as G from './GroundForces.js';
-
+import * as Obj from './Objects.js';
 
 /**
  * 
@@ -15,13 +12,13 @@ export function getRequirements(id, type){
     let reqObj;
     switch(type){
         case "building":
-            reqObj = Bds.buildingEquations;
+            reqObj = Obj.buildingEquations;
             break;
         case "tech":
-            reqObj = T.techEquations;
+            reqObj = Obj.techEquations;
             break;
         case "groundforce":
-            reqObj = G.gForceEquations;
+            reqObj = Obj.gForceEquations;
             break;
         default:
             return "Error with type-parameter";

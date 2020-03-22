@@ -1,5 +1,4 @@
-//import { Db } from "mongodb";
-
+import * as Obj from './Objects.js';
 /* Module functions
     -- Contains the datastructure for all equations considering buildings
     - getBuildingResourceCost
@@ -7,52 +6,6 @@
     - getResourceProduction
 */
 
-export const IdMine1 = "Mine_res_1";
-export const IdMine2 = "Mine_res_2";
-export const IdMine3 = "Mine_res_3";
-// MIGI mp tästä
-// "Mine_res_1" equals ID of the building
-export const buildingEquations = {
-    "Mine_res_1" : {
-        "cost_eq" : {
-            "res1" : function(n){return 1*n;},
-            "res2" : function(n){return 2*n;},
-            "res3" : function(n){return 3*n;}
-        },
-        "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return Math.round((3*n*0.555));}
-    },
-    "Mine_res_2" : {
-        "cost_eq" : {
-            "res1" : function(n){return 1*n;},
-            "res2" : function(n){return 2*n;},
-            "res3" : function(n){return 3*n;}
-        },
-        "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){ return Math.round(4*n);}
-    },
-    "Mine_res_3" : {
-        "cost_eq" : {
-            "res1" : function(n){return 1*n;},
-            "res2" : function(n){return 2*n;},
-            "res3" : function(n){return 3*n;}
-        },
-        "time_eq" : function(n){return 3*n;},
-        "production_eq" : function(n){return Math.round(2*n);}
-    },
-    "shipyard" : {
-        "cost_eq" : {
-            "res1" : function(n){return 1*n;},
-            "res2" : function(n){return 2*n;},
-            "res3" : function(n){return 3*n;}
-        },
-        "time_eq" : function(n){return 3*n;},
-        "requirements" : {
-            "tech2" : 1,
-            "tech3" : 2
-        }
-    }
-};
 
 /**
  * 
@@ -62,9 +15,9 @@ export const buildingEquations = {
  */
 export function getBuildingUpgradeCost(building_id, building_level){
     let c = parseInt(building_level);
-    let r1 = buildingEquations[building_id].cost_eq.res1(c);
-    let r2 = buildingEquations[building_id].cost_eq.res2(c);
-    let r3 = buildingEquations[building_id].cost_eq.res3(c);
+    let r1 = Obj.buildingEquations[building_id].cost_eq.res1(c);
+    let r2 = Obj.buildingEquations[building_id].cost_eq.res2(c);
+    let r3 = Obj.buildingEquations[building_id].cost_eq.res3(c);
     return [r1,r2,r3];
 };
 
@@ -76,6 +29,6 @@ export function getBuildingUpgradeCost(building_id, building_level){
  */
 export function getTimeConsumptionOnBuildingUpgrade(building_id, building_level){
     let c = parseInt(building_level);
-    return buildingEquations[building_id].time_eq(c);
+    return Obj.buildingEquations[building_id].time_eq(c);
 };
 

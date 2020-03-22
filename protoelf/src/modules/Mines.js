@@ -1,7 +1,9 @@
-import * as Bds from './Buildings.js';
+import * as Obj from './Objects.js';
 
 /* Module functions:
-
+    -getResourcesPerSecond
+    -getResourcesPerSecondAll
+    updateResourcesFromProduction
 */
 
 /**
@@ -12,7 +14,7 @@ import * as Bds from './Buildings.js';
  */
 export function getResourcesPerSecond(building_id, building_level){
     let c = parseInt(building_level);
-    return Bds.buildingEquations[building_id].production_eq(c);
+    return Obj.buildingEquations[building_id].production_eq(c);
 };
 
 /**
@@ -26,9 +28,9 @@ export function getResourcesPerSecondAll(level1,level2,level3){
     let a = level1;
     let b = level2;
     let c = level3;
-    return [Bds.buildingEquations[Bds.IdMine1].production_eq(a),
-            Bds.buildingEquations[Bds.IdMine2].production_eq(b),
-            Bds.buildingEquations[Bds.IdMine3].production_eq(c)];
+    return [Obj.buildingEquations[Obj.IdMine1].production_eq(a),
+            Obj.buildingEquations[Obj.IdMine2].production_eq(b),
+            Obj.buildingEquations[Obj.IdMine3].production_eq(c)];
 };
 
 /**
