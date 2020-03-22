@@ -1,10 +1,3 @@
-/*
-const Resource = require('../modules/Mines.js');
-const Database = require('./db_functions.js');
-const DB = require('./db.js');
-let ObjectId = require('mongodb').ObjectID;
-*/
-
 import * as Resource from '../modules/Mines.js';
 import * as Database from './db_functions.js';
 import * as DB from './db.js';
@@ -43,13 +36,13 @@ export const login = (username) => new Promise(async (resolve, reject) => {
         colony.resource3
       ];
       let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], levelsArray[2], colony.time, time);
-      console.log(resources, "server_functions: 47");
+      console.log("server_functions: 46",currentResources);
+      console.log("server_functions: 47",resources);
       resources = [
         currentResources[0] + resources[0],
         currentResources[1] + resources[1],
         currentResources[2] + resources[2]
       ];
-      console.log(resources, "server_functions: 53");
       colony = await Database.findAndUpdateFromDatabase("colony", colonyQuery, 
       {
         $set: {
@@ -87,7 +80,7 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
   let upgradeExists;
   let resourceExists;
   let collection = "colony";
-  let query = { _id: new ObjectId(colonyId) };
+  let colonyQuery = { _id: new ObjectId(colonyId) };
 
   try {
     userExists = await isUserInDb(username);
@@ -115,7 +108,7 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
         if (resourceExists) {
           try {
             console.log("Resources exist");
-            let colony = await Database.findDocumentFromDatabase("colony", query);
+            let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
             let levelsArray = Object.entries(colony.buildings);
             let time = new Date().getTime();
             levelsArray = [
@@ -128,13 +121,17 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
               colony.resource2,
               colony.resource3
             ];
-            let resources = Resource.updateResourcesFromProduction(levelsArray[0][1], levelsArray[1][1], levelsArray[2][1], colony.time, time);
+            let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], levelsArray[2], colony.time, time);
+            console.log("server_functions: 132",currentResources);
+            console.log("server_functions: 133",resources);
             resources = [
               currentResources[0] + resources[0],
               currentResources[1] + resources[1],
               currentResources[2] + resources[2]
             ];
-            colony = await Database.findAndUpdateFromDatabase(collection, query, 
+
+            // Resource costs
+            colony = await Database.findAndUpdateFromDatabase(collection, colonyQuery, 
             {
               $set: {
                 time: new Date().getTime(),
@@ -325,14 +322,3 @@ export const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Prom
   resolve(true);
   return;
 })
-
-/*
-module.exports = {
-  login,
-  upgrade,
-  isUserInDb,
-  isColonyInDb,
-  isUpgradeInDb,
-  isEnoughResources,
-}
-*/
