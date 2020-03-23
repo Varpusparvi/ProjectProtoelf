@@ -13,7 +13,7 @@ const Buildings = ({upgrade, buildings, currentColony}) =>  {
   const combineData = (building) => {
     let array = Object.keys(currentColony);
     for (let field of array) {
-      if (building._id === field) {
+      if (building.name === field) {
         return currentColony[field];
       }
     }
@@ -29,7 +29,7 @@ const Buildings = ({upgrade, buildings, currentColony}) =>  {
       {buildings.map((building) => {
         let level = combineData(building);
         return (
-          <div key={building._id} value={building._id} className="building" onClick={() => handleClick(building._id)}>
+          <div key={building.name} value={building.name} className="building" onClick={() => handleClick(building.name)}>
             <div className="building_img">
               <img src={image} alt=""></img>
               <div className="price">

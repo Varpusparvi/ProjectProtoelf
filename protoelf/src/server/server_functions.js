@@ -1,6 +1,7 @@
 import * as Resource from '../modules/Mines.js';
 import * as Upgrades from '../modules/Buildings.js'
 import * as Database from './db_functions.js';
+import * as Obj from '../modules/Objects.js';
 import * as DB from './db.js';
 import { default as Mongodb } from 'mongodb';
 let ObjectId = Mongodb.ObjectId;
@@ -80,46 +81,9 @@ export const login = (username) => new Promise(async (resolve, reject) => {
 
 
 /**
- * Checks if upgrade is allowed
- * @param {*} upgradeId 
- * @param {*} upgradeLevel 
- * @param {*} colonyId 
- * @param {*} username 
- * @returns [true, array of buildings] or [false, null]
- */
-const isUpgradeAllowed = (upgradeId, upgradeLevel, colonyId, username) => new Promise(async (resolve, reject) => {
-  // Get information of if requirements for upgrade are met
-  try {
-    let userExists = await isUserInDb(username);
-    let colonyExists = await isColonyInDb(colonyId);
-    let upgradeExists = await isUpgradeInDb(upgradeId);
-    //let resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
-    let buildings = colonyExists[0].buildings;
-
-    // TODO check for if the player owns the colony
-    // If allowed return array of [true, array of buildings]
-    if (userExists[1]) {
-      if (colonyExists[1]) {
-        if (upgradeExists[1]) {
-          //if (resourceExists[1]) {
-            resolve([true, buildings]);
-          //}
-        }
-      }
-    } else { // else [false, null]
-      resolve([false, null]);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-})
-
-
-
-/**
  * Upgrades selected entity in selected colony for user
  * @param {*} upgradeId 
- * @param {*} upgradeLevel 
+ * @param {*} upgradeLevel level to be upgraded to
  * @param {*} colonyId 
  * @param {*} username 
  * @returns upgraded or unupgraded colony
@@ -162,8 +126,9 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
       console.log("server_functions: 146",resources);
 
       // Upgrade costs resources
-      // let resourceCosts = Upgrades.getBuildingUpgradeCost();
       let resourceCosts = [1000, 1000, 1000];
+      //let resourceCosts = Upgrades.getBuildingUpgradeCost(upgradeId, upgradeLevel);
+      
       resources = [
         resources[0] - resourceCosts[0],
         resources[1] - resourceCosts[1],
@@ -206,16 +171,9 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
 export const createUser = (username) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
-  // Create colony for the user
-  let buildingIds;
-  try {
-    buildingIds = await db.collection("buildings").find().toArray();
 
-  } catch (error) {
-    console.log("Cannot access buildings. Aborting createUser!");
-    return;
-  }
-  
+  // Create colony for the user
+  let buildings = Obj.buildingEquations;
   // Colony with no resources or buildings, time created
   let colony = {
     resource1: 0,
@@ -225,14 +183,13 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
     time: new Date().getTime()
   }
 
+  console.log(buildings);
   // set levels for buildings (mines lvl 1)
-  for (let i = 0; i < buildingIds.length; i++) {
-    if (i < 3) { // while building is resource building ie. first 3 buildings
-      let id = buildingIds[i]._id;
-      colony.buildings[id] = 1;
+  for (let i = 0; i < buildings.length; i++) {
+    if (buildings[i].isResourceGenerator == true) {
+      colony.buildings[buildings[i].name] = 1;
     } else {
-      let id = buildingIds[i]._id;
-      colony.buildings[id] = 0;
+      colony.buildings[buildings[i].name] = 0;
     }
   }
 
@@ -261,6 +218,43 @@ export const createUser = (username) => new Promise( async (resolve, reject) => 
       return;
     })
   })
+})
+
+
+
+/**
+ * Checks if upgrade is allowed
+ * @param {*} upgradeId 
+ * @param {*} upgradeLevel 
+ * @param {*} colonyId 
+ * @param {*} username 
+ * @returns [true, array of buildings] or [false, null]
+ */
+const isUpgradeAllowed = (upgradeId, upgradeLevel, colonyId, username) => new Promise(async (resolve, reject) => {
+  // Get information of if requirements for upgrade are met
+  try {
+    let userExists = await isUserInDb(username);
+    let colonyExists = await isColonyInDb(colonyId);
+    let upgradeExists = isUpgradeInDb(upgradeId);
+    //let resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+    let buildings = colonyExists[0].buildings;
+
+    // TODO check for if the player owns the colony
+    // If allowed return array of [true, array of buildings]
+    if (userExists[1]) {
+      if (colonyExists[1]) {
+        if (upgradeExists[1]) {
+          //if (resourceExists[1]) {
+            resolve([true, buildings]);
+          //}
+        }
+      }
+    } else { // else [false, null]
+      resolve([false, null]);
+    }
+  } catch (error) {
+    console.log(error);
+  }
 })
 
 
@@ -318,51 +312,7 @@ export const isColonyInDb = (colonyId) => new Promise( async (resolve, reject) =
  * @param {*} upgradeId 
  * @returns found file and boolean [object, true]. If didn't find file return [null, false]
  */
-export const isUpgradeInDb = (upgradeId) => new Promise( async (resolve, reject) => {
-  let query = { _id: new ObjectId(upgradeId) };
-  let collection1 = "buildings";
-  let collection2 = "tech";
-
-  try {
-    // TODO Change db structure?
-    // is in building db?
-    let document = await Database.findDocumentFromDatabase(collection1, query); 
-    if (document === null) {
-      // is in tech db?
-      document = await Database.findDocumentFromDatabase(collection2, query);  
-      if (document === null) {
-        resolve([null, false]);
-        return;
-      } else {
-        resolve([document, true]);
-        return;
-      }
-    } else {
-      resolve([document, true]);
-      return;
-    }
-  } catch (error) {
-    console.log(error);
-    reject();
-    return;
-  }
-})
-
-
-
-/**
- * Gets the document with given upgradeId
- * @param {*} upgradeId 
- * @returns found file and boolean [object, true]. If didn't find file return [null, false]
- */
-export const isEnoughResources = (upgradeId, upgradeLevel, colonyId) => new Promise( async (resolve, reject) => {
-  let upgradeQuery = { _id: new ObjectId(upgradeId) };
-  let colonyQuery = { _id: new ObjectId(colonyId) };
-  let upgradeCollection = "upgrade";
-  let colonyCollection = "colony";
-  /*
-  */
+export const isUpgradeInDb = (upgradeId) => {
   // TODO
-  resolve(true);
-  return;
-})
+  return [null, true];
+}

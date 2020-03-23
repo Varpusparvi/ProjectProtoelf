@@ -12,10 +12,16 @@ import * as Obj from './Objects.js';
  * @param {*} building_level Level of the building
  * @returns Resource generation rate per one second
  */
-export function getResourcesPerSecond(building_id, building_level){
-    let c = parseInt(building_level);
-    return Obj.buildingEquations[building_id].production_eq(c);
+export function getResourcesPerSecond(building_id, building_level) {
+    for (let i = 0; i < Obj.buildingEquations.length; i++) {
+        if (Obj.buildingEquations[i].name === building_id) {
+            return Obj.buildingEquations[i].production_eq(building_level);
+            break;
+        }
+    }
+    return;
 };
+
 
 /**
  * Helper function
@@ -24,14 +30,15 @@ export function getResourcesPerSecond(building_id, building_level){
  * @param {*} level3 Level of mine 3
  * @returns Array of three with the resource production rate per second [r1,r2,r3]
  */
-export function getResourcesPerSecondAll(level1,level2,level3){
-    let a = level1;
-    let b = level2;
-    let c = level3;
-    return [Obj.buildingEquations[Obj.IdMine1].production_eq(a),
-            Obj.buildingEquations[Obj.IdMine2].production_eq(b),
-            Obj.buildingEquations[Obj.IdMine3].production_eq(c)];
+export function getResourcesPerSecondAll(level1, level2, level3) {
+    let resourcePerSecArray = [];
+    let x = Obj.buildingEquations[0].production_eq(level1);
+    let y = Obj.buildingEquations[1].production_eq(level2);
+    let z = Obj.buildingEquations[2].production_eq(level3);
+    resourcePerSecArray.push(x, y, z);
+    return resourcePerSecArray;
 };
+
 
 /**
  * Good function to use with database's lastChecked-time with Time.now

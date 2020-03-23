@@ -69,12 +69,9 @@ const App = () =>  {
    */
   const setResources = (json) => {
     let keys = Object.keys(json.buildings);
-    let buildingIndex0 = keys[0];
-    let buildingIndex1 = keys[1];
-    let buildingIndex2 = keys[2];
-    let _res1Rate = ResourceMining.getResourcesPerSecond("Mine_res_1",json.buildings[buildingIndex0]);
-    let _res2Rate = ResourceMining.getResourcesPerSecond("Mine_res_2",json.buildings[buildingIndex1]);
-    let _res3Rate = ResourceMining.getResourcesPerSecond("Mine_res_3",json.buildings[buildingIndex2]);
+    let _res1Rate = ResourceMining.getResourcesPerSecond("Mine_res_1",json.buildings[keys[0]]);
+    let _res2Rate = ResourceMining.getResourcesPerSecond("Mine_res_2",json.buildings[keys[1]]);
+    let _res3Rate = ResourceMining.getResourcesPerSecond("Mine_res_3",json.buildings[keys[2]]);
     console.log("Res1Rate", _res1Rate);
     console.log("Res2Rate", _res2Rate);
     console.log("Res3Rate", _res3Rate);
@@ -99,7 +96,7 @@ const App = () =>  {
       if (json === null || json === undefined) {
         return;
       }
-
+      console.log(json);
       // init app
       setUser(json[0]);
       setCurrentColony(json[1]);
@@ -120,7 +117,7 @@ const App = () =>  {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: username
+        username: username //TODO password
       })
     })
     .then((response) => {

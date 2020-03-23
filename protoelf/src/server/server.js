@@ -1,6 +1,7 @@
 import * as ServerHelper from './server_functions.js';
 import * as Database from './db_functions.js';
 import * as DB from './db.js';
+import * as Obj from '../modules/Objects.js';
 import express from 'express';
 import bodyParser from 'body-parser';
 
@@ -20,12 +21,8 @@ var tech = [];
 * Starts connection to db and listens to port
 */
 DB.initDb( async () => {
-  let buildingIds = await Database.addBuildingsToDb();
-  buildings = await Promise.all(buildingIds.map(( async (buildingId) => {
-    let b = await ServerHelper.isUpgradeInDb(buildingId);
-    return b[0];
-  })))
-  
+  buildings = Obj.buildingEquations;
+  console.log(buildings);
   console.log("Loaded buildings into memory!");
   app.listen(port, () => console.log(`Listening on port ${port}`));
 })
