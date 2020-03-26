@@ -1,6 +1,5 @@
 import express from 'express';
-import * as ServerHelper from '../server_functions.js';
-import { buildings } from '../server.js';
+import * as reqHandlers from '../requestHandlers/requestHandlers.js';
 const router = express.Router();
 
 
@@ -14,19 +13,30 @@ router.use(function (req, res, next) {
 
 // define the home page route
 router.post('/login',  async (req, res) => {
+  // Log to server console
+  // TODO better logging
+  log(req);
+
+  // Check if request is readable
+  if(req != null && req != undefined && req.body != undefined && req.body != null) {
+    let dataToSend = await reqHandlers.handleLogin(req.body);
+    dataToSend = JSON.stringify(dataToSend);
+    console.log(dataToSend);
+    res.send(dataToSend);
+  } else {
+    res.send(JSON.stringify("Something went wrong :("));
+  }
+})
+
+
+/**
+ * Logs to server console
+ */
+const log = (req) => {
   console.log('--------------------------------------------------------------------------------------------');
   console.log("Address: "+ '/login' + ' POST');
+  console.log("Time: ", Date.now().toLocaleString("en-US"));
   console.log(req.body);
-  var username = req.body.username;
-  
-  // Login / Create account with given username
-  try {
-    var user = await ServerHelper.login(username);
-  } catch (error) {
-    console.log(error);
-  }
-  user.push(buildings);
-  res.send(JSON.stringify(user));
-})
+}
 
 export { router as loginRoute };

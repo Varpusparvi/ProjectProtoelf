@@ -1,5 +1,5 @@
 import express from 'express';
-import * as ServerHelper from '../server_functions.js';
+import * as reqHandlers from '../requestHandlers/requestHandlers.js';
 const router = express.Router();
 
 
@@ -13,23 +13,30 @@ router.use(function (req, res, next) {
 
 // define the home page route
 router.post('/building',  async (req, res) => {
+  // Log to server console
+  // TODO better logging
+  log(req);
+
+  // Check if request is readable
+  if(req != null && req != undefined && req.body != undefined && req.body != null) {
+    let dataToSend = await reqHandlers.handleUpgrade(req.body);
+    dataToSend = JSON.stringify(dataToSend);
+    console.log(dataToSend);
+    res.send(dataToSend);
+  } else {
+    res.send(JSON.stringify("Something went wrong :("));
+  }
+})
+
+
+/**
+ * Logs to server console
+ */
+const log = (req) => {
   console.log('--------------------------------------------------------------------------------------------');
   console.log("Address: "+ '/building' + ' POST');
+  console.log("Time: ", Date.now().toLocaleString("en-US"));
   console.log(req.body);
-  var username = req.body.username;
-  var upgradeId = req.body.upgradeId;
-  var upgradeLevel = req.body.upgradeLevel
-  var colonyId = req.body.colonyId;
-  
-  // Upgrade a colony
-  try {
-    var upgradedColony = await ServerHelper.upgrade(upgradeId, upgradeLevel, colonyId, username);
-  } catch (error) {
-    console.log(error);
-  }
-  
-  // Upgrade the entity if costs are matched
-  res.send(JSON.stringify(upgradedColony)); // PLACEHOLDER
-})
+}
 
 export { router as buildingRoute };

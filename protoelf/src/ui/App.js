@@ -117,7 +117,8 @@ const App = () =>  {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: username //TODO password
+        username: username, //TODO password
+        password: "password"
       })
     })
     .then((response) => {
