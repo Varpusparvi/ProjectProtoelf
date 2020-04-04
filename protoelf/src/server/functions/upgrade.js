@@ -1,6 +1,7 @@
 import * as Checks from '../functions/checks.js'
 import * as Resource from '../../modules/Mines.js';
 import * as Database from '../db_functions.js';
+import * as Buildings from '../../modules/Buildings.js';
 import { default as Mongodb } from 'mongodb';
 
 let ObjectId = Mongodb.ObjectId;
@@ -54,8 +55,11 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
       console.log("server_functions: 146",resources);
 
       // Upgrade costs resources
-      let resourceCosts = [1000, 1000, 1000];
-      //let resourceCosts = Upgrades.getBuildingUpgradeCost(upgradeId, upgradeLevel);
+      let resourceCosts = Buildings.getBuildingUpgradeCost(upgradeId, upgradeLevel);
+      console.log("UPGRADE COST: ", resourceCosts);
+      if (resourceCosts === undefined) {
+        console.log("Mitä helvettiä");
+      }
       
       resources = [
         resources[0] - resourceCosts[0],

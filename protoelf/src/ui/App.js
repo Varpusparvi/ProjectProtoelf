@@ -86,7 +86,7 @@ const App = () =>  {
 
   /**
    * Handles login and registering
-   * @param {*} e value of input field
+   * @param {*} e event to 
   */
   const loginHandler = async (e) => {
     if (e.keyCode === 13) {
