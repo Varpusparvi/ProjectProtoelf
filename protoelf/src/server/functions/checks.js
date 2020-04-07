@@ -18,7 +18,10 @@ export const isUpgradeAllowed = (upgradeId, upgradeLevel, colonyId, username) =>
     let userExists = await isUserInDb(username);
     let colonyExists = await isColonyInDb(colonyId);
     let upgradeExists = isUpgradeInDb(upgradeId);
+    //let upgradeOngoing = isUpgradeOngoing();
     //let resourceExists = await isEnoughResources(upgradeId, upgradeLevel, colonyId);
+    //let requirementsExist = isRequirementsMet();
+
     let buildings = colonyExists[0].buildings;
 
     // TODO check for if the player owns the colony
@@ -26,9 +29,15 @@ export const isUpgradeAllowed = (upgradeId, upgradeLevel, colonyId, username) =>
     if (userExists[1]) {
       if (colonyExists[1]) {
         if (upgradeExists[1]) {
-          //if (resourceExists[1]) {
-            resolve([true, buildings]);
-          //}
+          resolve([true, buildings]);
+          /*
+          if (resourceExists[1]) {
+            if (upgradeOngoing) {
+              if (requirementsExist) {
+                resolve([true, buildings]);
+              }
+            }
+          }*/
         }
       }
     } else { // else [false, null]

@@ -15,10 +15,10 @@ export const findDocumentFromDatabase = (collection, query) => new Promise( asyn
   // Database query
   try {
     result = await db.collection(collection).findOne(query);
+    console.log("findDocumentFromDatabase() called.");
   } catch (error) {
     console.log(error);
   }
-  console.log("findDocumentFromDatabase() called.");
   resolve(result);
   return;
 })
@@ -40,11 +40,10 @@ export const findAndUpdateFromDatabase = (collection, query, updatedDocument) =>
   // Database query
   try {
     result = await db.collection(collection).findOneAndUpdate(query, updatedDocument, {returnOriginal: false});
-    console.log("@219" + JSON.stringify(result.value, null, 1));
+    console.log("findAndUpdateFromDatabase() called.");
   } catch (error) {
     console.log(error);
   }
-  console.log("findDocumentFromDatabase() called.");
   resolve(result.value);
   return;
 })
@@ -64,12 +63,11 @@ export const insertDocumentIntoDatabase = (collection, document) => new Promise(
   // Database query
   try {
     _id = await db.collection(collection).insertOne(document).insertedId;
-    console.log(_id);
+    console.log("insertDocumentIntoDatabase() called.");
   } catch (error) {
     console.log(error);
   }
   
-  console.log("insertDocumentIntoDatabase() called.");
   resolve(_id);
   return;
 })
@@ -81,13 +79,13 @@ export const insertDocumentIntoDatabase = (collection, document) => new Promise(
  * @param {*} query Query used to find target document
  * @returns ????
  */
-export const removeDocumentFromDatabase = (collection, query) => new Promise( async () => {
+export const removeDocumentFromDatabase = (collection, query) => new Promise( async (resolve, reject) => {
   const dbo = DB.getDb();
   const db = dbo.db("protoelf");
   let deleted;
   try {
     deleted = await db.collection(collection).removeOne(query);
-    console.log(deleted)
+    console.log("removeDocumentFromDatabase() called.");
   } catch (error) {
     console.log(error);
   }
@@ -130,3 +128,20 @@ export const addBuildingsToDb = () => new Promise ( async (resolve, reject) => {
   resolve(array);
   return;
 })
+
+
+/**
+ * Get the next closest upgrades from database upgrades table
+ * @param {*} timeSec how far in the future to fetch
+ */
+export const getClosestUpgrades = async (timeSec) => {
+  const dbo = DB.getDb();
+  const db = dbo.db("protoelf");
+  let timeDistance = new Date().getTime() + timeSec * 1000;
+  let query = { time: { $lt: timeDistance } };
+  let upgradesArray = await db.collection("upgrades").find(query).toArray();
+  if (upgradesArray.length === 0 || upgradesArray === undefined) {
+    return [];
+  }
+  return upgradesArray;
+}

@@ -2,6 +2,8 @@ import * as DB from './db.js';
 import * as Obj from '../modules/Objects.js';
 import express from 'express';
 import bodyParser from 'body-parser';
+import * as DBFunction from './db_functions.js';
+import { upgradeFinish } from './functions/upgrade.js';
 
 import { loginRoute } from './routing/login.js';
 import { buildingRoute } from './routing/building.js';
@@ -12,7 +14,8 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 export var buildings = [];
-var tech = [];
+export var upgrades = [];
+export var tech = [];
 
 
 /*
@@ -20,6 +23,37 @@ var tech = [];
 */
 DB.initDb( async () => {
   buildings = Obj.buildingEquations;
+
+  upgrades = await DBFunction.getClosestUpgrades(600); // 10min upgrades
+  if (upgrades.length !== 0) {
+    for (let i = 0; i < upgrades.length; i++) {
+      if (upgrades[i].time < new Date().getTime()) {
+        let success = upgradeFinish(upgrades[i].name, upgrades[i].colony);
+        if (success) {
+          upgrades.splice(i, 1);
+        }
+      }
+    }
+  }
+  console.log(upgrades);
+  console.log("FETCHED UPGRADES", upgrades);
+
+  // Timer to fetch upgrades at intervals
+  setAsyncInterval(async () => {
+    upgrades = await DBFunction.getClosestUpgrades(600); // 10min upgrades
+    if (upgrades.length !== 0) {
+      for (let i = 0; i < upgrades.length; i++) {
+        if (upgrades[i].time < new Date().getTime()) {
+          let success = upgradeFinish(upgrades[i].name, upgrades[i].colony);
+          if (success) {
+            upgrades.splice(i, 1);
+          }
+        }
+      }
+    }
+    console.log("FETCHED UPGRADES", upgrades);
+  }, 10000)
+
   console.log(buildings);
   console.log("Loaded buildings into memory!");
   app.listen(port, () => console.log(`Listening on port ${port}`));
@@ -42,3 +76,30 @@ app.use('/building', buildingRoute);
 app.use('/tech', techRoute);
 app.use('/fleet', fleetRoute);
 */
+
+
+const asyncIntervals = [];
+
+const runAsyncInterval = async (cb, interval, intervalIndex) => {
+  await cb();
+  if (asyncIntervals[intervalIndex]) {
+    setTimeout(() => runAsyncInterval(cb, interval, intervalIndex), interval);
+  }
+};
+
+const setAsyncInterval = (cb, interval) => {
+  if (cb && typeof cb === "function") {
+    const intervalIndex = asyncIntervals.length;
+    asyncIntervals.push(true);
+    runAsyncInterval(cb, interval, intervalIndex);
+    return intervalIndex;
+  } else {
+    throw new Error('Callback must be a function');
+  }
+};
+
+const clearAsyncInterval = (intervalIndex) => {
+  if (asyncIntervals[intervalIndex]) {
+    asyncIntervals[intervalIndex] = false;
+  }
+};

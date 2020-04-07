@@ -22,7 +22,7 @@ export const buildingEquations = [
             res2 : function(n){return 2*n;},
             res3 : function(n){return 3*n;}
         },
-        time_eq : function(n){return 3*n;},
+        time_eq : function(n){return 7*n;},
         production_eq : function(n){ return Math.round(4*n);}
     },
     {

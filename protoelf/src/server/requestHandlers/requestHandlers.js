@@ -44,7 +44,6 @@ export const handleUpgrade = async (body) => {
     console.log(error);
     dataToSend = [false]; // IsTransactionSuccesful 
   }
-
   return dataToSend;
 }
 

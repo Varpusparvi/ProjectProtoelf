@@ -32,7 +32,11 @@ export function getBuildingUpgradeCost(building_id, building_level){
  * @returns Upgrade time in seconds, from start to finish
  */
 export function getTimeConsumptionOnBuildingUpgrade(building_id, building_level){
-    let c = parseInt(building_level);
-    return Obj.buildingEquations[building_id].time_eq(c);
+    for (let i = 0; i < Obj.buildingEquations.length; i++) {
+        if (Obj.buildingEquations[i].name === building_id) {
+            return Obj.buildingEquations[i].time_eq(building_level) * 1000; // In Milliseconds
+        }
+    }
+    return undefined;
 };
 
