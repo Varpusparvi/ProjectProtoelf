@@ -102,6 +102,7 @@ const App = () =>  {
       setCurrentColony(json[1]);
       setResources(json[1]);
       setBuildings(json[2]);
+      console.log(buildings);
     }
   }
 
@@ -167,10 +168,7 @@ const App = () =>  {
         if (json === null) {
           return;
         }
-        console.log(json);
-        setCurrentColony(json);
-        setResources(json);
-        // TODO
+        console.log("Upgrade status: " + json);
       })
     }).catch((error) => {
       console.log(error)

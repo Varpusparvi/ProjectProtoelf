@@ -2,7 +2,7 @@ import * as Checks from '../functions/checks.js'
 import * as Resource from '../../modules/Mines.js';
 import * as Database from '../db_functions.js';
 import * as Buildings from '../../modules/Buildings.js';
-import { upgrades } from '../server.js';
+import { setUpgrades } from '../server.js';
 import { default as Mongodb } from 'mongodb';
 
 let ObjectId = Mongodb.ObjectId;
@@ -27,27 +27,26 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
     // Set updated level
     check[1][upgradeId] = upgradeLevel; 
     let buildings = check[1];
-    try {
-      // Find colony from database
-      let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
-      let time = new Date().getTime();
-      let levelsArray = Object.entries(colony.buildings);
-
-      // Mine levels for updated resource count
-      levelsArray = [
-        levelsArray[0][1],  //res1mine
-        levelsArray[1][1],  //res2mine
-        levelsArray[2][1],  //res3mine
-      ];
-      let currentResources = [
+    // Find colony from database
+    let colony = await Database.findDocumentFromDatabase("colony", colonyQuery);
+    let time = new Date().getTime();
+    let levelsArray = Object.entries(colony.buildings);
+    
+    // Mine levels for updated resource count
+    levelsArray = [
+      levelsArray[0][1],  //res1mine
+      levelsArray[1][1],  //res2mine
+      levelsArray[2][1],  //res3mine
+    ];
+    let currentResources = [
         colony.resource1,
         colony.resource2,
         colony.resource3
-      ];
-
-      // Update resources to be up to date before trying to upgrade
-      let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], 
-                                                            levelsArray[2], colony.time, time);
+    ];
+      
+    // Update resources to be up to date before trying to upgrade
+    let resources = Resource.updateResourcesFromProduction(levelsArray[0], levelsArray[1], 
+      levelsArray[2], colony.time, time);
       resources = [
         currentResources[0] + resources[0],
         currentResources[1] + resources[1],
@@ -57,26 +56,23 @@ export const upgrade = (upgradeId, upgradeLevel, colonyId, username) => new Prom
 
       // Upgrade costs resources
       let resourceCosts = Buildings.getBuildingUpgradeCost(upgradeId, upgradeLevel);
-      console.log("Upgrade cost:", resourceCosts);
-      if (resourceCosts === undefined) {
-        console.log("getBuildingUpgradeCost bug");
-      }
-      // check cost
-      resources = [
-        resources[0] - resourceCosts[0],
-        resources[1] - resourceCosts[1],
-        resources[2] - resourceCosts[2]
-      ]
-
-      let upgradeStarted = upgradeStart(upgradeId, upgradeLevel, colonyId);
-      console.log("-------------------------------------------------");
-
-      // Return new colony information to the calling function
-      resolve(colony);
-      return;
-    } catch (error) {
-      console.log(error);
+    console.log("Upgrade cost:", resourceCosts);
+    if (resourceCosts === undefined) {
+      console.log("getBuildingUpgradeCost bug");
     }
+    // check cost
+    resources = [
+      resources[0] - resourceCosts[0],
+      resources[1] - resourceCosts[1],
+      resources[2] - resourceCosts[2]
+    ]
+    
+    let upgradeStarted = upgradeStart(upgradeId, upgradeLevel, colonyId);
+    console.log("-------------------------------------------------");
+    
+    // Return new colony information to the calling function
+    resolve(upgradeStarted, colony);
+    return upgradeStarted;
   } else {
     console.log("Upgrade not allowed!");
   }
@@ -136,7 +132,7 @@ export const upgradeFinish = async (upgradeId, colonyId) => {
     console.log("UPGRADE FINISHED:", colony);
     return true;
   } catch (error) {
-    console.log(error);
+    console.log("CANT FINISH UPGRADE", error);
     return false;
   }
 }
@@ -164,7 +160,8 @@ const upgradeStart = async (upgradeId, upgradeLevel, colonyId) => {
     }
     await Database.insertDocumentIntoDatabase("upgrades", upgradeNotice);
     console.log(upgradeNotice);
-    upgrades = await Database.getClosestUpgrades(600); // Global variable const????
+    setUpgrades(await Database.getClosestUpgrades(600));
+    //upgrades = await Database.getClosestUpgrades(600); // Global variable const????
     return true;
   } catch (e) {
     console.log("CANT START UPGRADE", e)

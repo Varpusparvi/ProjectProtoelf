@@ -14,7 +14,12 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 export var buildings = [];
-export var upgrades = [];
+var upgrades = [];
+const setUpgrades = (array) => {
+  upgrades = array;
+}
+
+export {upgrades, setUpgrades};
 export var tech = [];
 
 
